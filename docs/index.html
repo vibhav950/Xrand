@@ -32,12 +32,12 @@
             Introduction
         </h2>
         <p>
-            A Random Number Generator (RNG) plays a critically important role in cryptography. 
-            Most programming languages and compilers provide functionality for generating 
-            "random" numbers as part of their standard libraries, but using these for 
-            cryptographic purposes is always a bad idea. The most common requirement of an 
-            RNG is in software dealing with encryption. The security of the most commonly used 
-            government-certified cryptographic protocols relies heavily on the availability 
+            A Random Number Generator (RNG) plays a critically important role in cryptography.
+            Most programming languages and compilers provide functionality for generating
+            "random" numbers as part of their standard libraries, but using these for
+            cryptographic purposes is always a bad idea. The most common requirement of an
+            RNG is in software dealing with encryption. The security of the most commonly used
+            government-certified cryptographic protocols relies heavily on the availability
             of unguessable random values.
         <p></p>
         The requirements for the "quality" of random numbers for such
@@ -108,15 +108,15 @@
         <h2>
             Mixing The Pool
         </h2>
-        The pool mixing operation is at done frequent intervals, for example after every 
-        32 bytes written to the pool and each time before any output is generated from it. 
-        This step performs diffusion within the pool while preserving its total entropy 
-        which ensures that every bit in the pool affects every other bit and also removes 
+        The pool mixing operation is at done frequent intervals, for example after every
+        32 bytes written to the pool and each time before any output is generated from it.
+        This step performs diffusion within the pool while preserving its total entropy
+        which ensures that every bit in the pool affects every other bit and also removes
         statistical biases.
         <p></p>
         This RNG uses a cryptographically secure one-way hash function to transform the content of the pool using the
         following procedure:<br />
-        <img src="docs/mix.png" width="500" height="220" style="padding-top: 10px; padding-bottom: 15px"><br />
+        <img src="mix.png" width="500" height="220" style="padding-top: 10px; padding-bottom: 15px"><br />
         Let p be the size of the randomness pool.<br />
         Let SHA512 be the underlying hash function with the digest size d.<br />
         Let P<sub>i</sub> be the i-th block of size d, where the number of blocks in the pool is given by n = p/d.<br />
@@ -176,7 +176,7 @@
                 caller.
             </li>
         </ol>
-        <img src="docs/extract.png" width="550" height="auto" style="padding-top: 0px; padding-bottom: 0px"><br />
+        <img src="extract.png" width="550" height="auto" style="padding-top: 0px; padding-bottom: 0px"><br />
         The pool mixing operation is done thrice in the above process: the first time to create a dependency of the
         generated output on the entire pool content and to prevent state leaks in case the attacker has access to
         values in the memory, a second time after inverting the bits to create the new pool, and a final third time so
@@ -216,7 +216,7 @@
             <li>The <a href="https://gnupg.org/software/libgcrypt/index.html">GnuPG</a> Random-Number Subsystem
                 Architecture.</a></li>
         </ul>
-        <hr/>
+        <hr />
         <p style="font-size: 14px; font-weight: 700;">
             Written by Vibhav Tiwari for Xrand
         </p>
