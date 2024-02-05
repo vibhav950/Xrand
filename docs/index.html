@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta lang="en">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width initial-scale=1.0">
+    <title>Xrand</title>
+    <style>
+        body {
+            margin-left: 25px;
+            margin-right: 25px;
+            font-family: 'Arial';
+            max-width: 100%;
+            text-align: justify;
+            font-size: 16px;
+        }
+
+        ul {
+            padding-left: 20px
+        }
+
+        ol {
+            padding-left: 20px
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <h2>
+            Introduction
+        </h2>
+        <p>
+            A Random Number Generator (RNG) plays a critically important role in cryptography.
+            Most programming languages and compilers provide functionality for generating
+            "random" numbers as part of their standard libraries, but using these for
+            cryptographic purposes is always a bad idea. The most common requirement of an
+            RNG is in software dealing with encryption. The security of the most commonly used
+            government-certified cryptographic protocols relies heavily on the availability
+            of unguessable random values.
+        <p></p>
+        The requirements for the "quality" of random numbers for such
+        cryptographic applications vary: generation of master keys and session
+        keys requires full-entropy data with the highest strength reserve, whereas
+        other requirements like generation of nonces and salts require unpredictability
+        and unique values.
+        </p>
+    </div>
+    <h2>
+        The Xrand RNG Architecture
+    </h2>
+    <div>
+        <p>
+            The core of the Random Number Generator and the source of the seeds required
+            for the generation of pseudorandom bits is a 384-byte randomness pool
+            that is periodically replenished with random data collected from various
+            physical sources using an algorithm designed to meet the following requirements:
+            <br />
+        <ol>
+            <li>
+                An adversary with full knowledge of the underlying software, hardware,
+                and all sources of randomness must not be able to predict the pool
+                content.
+            </li>
+            <li>
+                At any given instance, if the internal state of the generator becomes
+                available to the adversary, the safety of the past outputs must remain
+                intact.
+            </li>
+        </ol>
+        To ensure that these requirements are met, the pool is refilled with new random data from a variety
+        of highly unpredictable sources so that should any of them fail, the security of the generator is not
+        compromised. The following are the sources used to fill the randomness pool:
+        <br />
+        <ul>
+            <li>
+                Fast entropy sources collected at 500 ms intervals:
+                <div style="padding-top: 5px;">
+                    <ul style="padding-left: 22px">
+                        <li>Thread and process information and memory status.</li>
+                        <li>High-precision CPU timestamps and system counters.</li>
+                        <li>Various Win32 handles and window information.</li>
+                        <li>MS Windows BCryptGenRandom.</li>
+                        <li>x86 on-chip hardware RNG (RDSEED and RDRAND).</li>
+                    </ul>
+                </div>
+            </li>
+            <br />
+            <li>
+                Slow entropy sources:
+                <div style="padding-top: 5px;">
+                    <ul style="padding-left: 22px">
+                        <li>Hardware RNG based on CPU timing jitter.</li>
+                        <li>Disk I/O statistics.</li>
+                        <li>System performance and interrupt information.</li>
+                        <li>Networking statistics for TCP/IP and Lanman.</li>
+                        <li>CoreTemp CPU temeratures.</li>
+                        <li>GPU-Z hardware information.</li>
+                        <li>Mouse movement and user keystrokes.</li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+        Instead of overwriting the existing data in the pool, the new data obtained from the above sources is
+        added to the pool using modulo 2<sup>8</sup> addition, which ensures an increase in the pool's entropy over
+        time.
+        <h2>
+            Mixing The Pool
+        </h2>
+        The pool mixing operation is at done frequent intervals, for example after every
+        32 bytes written to the pool and each time before any output is generated from it.
+        This step performs diffusion within the pool while preserving its total entropy
+        which ensures that every bit in the pool affects every other bit and also removes
+        statistical biases.
+        <p></p>
+        This RNG uses a cryptographically secure one-way hash function to transform the content of the pool using the
+        following procedure:<br />
+        <img src="mix.png" width="500" height="220" style="padding-top: 10px; padding-bottom: 15px"><br />
+        Let p be the size of the randomness pool.<br />
+        Let SHA512 be the underlying hash function with the digest size d.<br />
+        Let P<sub>i</sub> be the i-th block of size d, where the number of blocks in the pool is given by n = p/d.<br />
+        Let R<sub>i</sub> be the i-th block of the new pool after the mixing operation has been applied to it.<br />
+        <p></p>
+        for i = 0 to n-1 do<br />
+        <div style="padding-left: 3%; padding-top: 5px;">
+            H = SHA512(R<sub>0</sub> || R<sub>1</sub> || ... || R<sub>i-1</sub> || P<sub>i</sub> || P<sub>i+1</sub> ||
+            ... || P<sub>n-1</sub>)<br />
+            R<sub>i</sub> = P<sub>i</sub> ^ H<br />
+        </div>
+        done<br />
+        <p></p>
+        For example,<br />
+        <div style="padding-top: 5px;">
+            R<sub>0</sub> = P<sub>0</sub> ^ SHA512(P<sub>0</sub> || P<sub>1</sub> || P<sub>2</sub> || ... ||
+            P<sub>n-1</sub>)<br />
+            R<sub>1</sub> = P<sub>1</sub> ^ SHA512(R<sub>0</sub> || P<sub>1</sub> || P<sub>2</sub> || ... ||
+            P<sub>n-1</sub>)<br />
+            R<sub>2</sub> = P<sub>2</sub> ^ SHA512(R<sub>0</sub> || R<sub>1</sub> || P<sub>2</sub> || ... ||
+            P<sub>n-1</sub>)<br />
+            .<br />
+            .<br />
+            .<br />
+            R<sub>n-1</sub> = P<sub>n-1</sub> ^ SHA512(R<sub>0</sub> || R<sub>1</sub> || R<sub>2</sub> || ... ||
+            R<sub>n-2</sub> || P<sub>n-1</sub>)<br />
+        </div>
+        <p></p>
+        Hence, we obtain the new pool R = R<sub>0</sub> || R<sub>1</sub> || ... || R<sub>n-1</sub><br />
+        </p>
+        <h2>
+            Generating Random Values
+        </h2>
+        <p>
+            While extracting data from the pool, its content is never directly copied to the destination. Therefore,
+            even if an attacker obtains the output generated by the RNG, it is infeasible for him to determine any prior
+            outputs. The following procedure is followed to extract data from the pool:
+        <p></p>
+        <ol>
+            <li>
+                If there hasn't been a slow poll at least once, call the slow poll function to collect new random data
+                from
+                the system and add it to the pool.
+            </li>
+            <li>
+                After every byte is written to the output buffer, the pool read cursor advances by
+                one
+                byte. If the cursor reaches the end of the pool, it wraps back to the beginning.
+            </li>
+            <li>
+                Mix the pool and XOR its content to the output buffer.
+                Invert every bit in the pool and mix it again to create the new pool and XOR its content to the output
+                buffer.
+            </li>
+            <li>
+                Mix the pool one final time (this does not affect the final output) and export the final value to the
+                caller.
+            </li>
+        </ol>
+        <img src="extract.png" width="550" height="auto" style="padding-top: 0px; padding-bottom: 0px"><br />
+        The pool mixing operation is done thrice in the above process: the first time to create a dependency of the
+        generated output on the entire pool content and to prevent state leaks in case the attacker has access to
+        values in the memory, a second time after inverting the bits to create the new pool, and a final third time so
+        that the generated output is not compromised even if the adversary has an opportunity to read the pool content
+        at a later stage.
+        </p>
+        <h2>
+            Fast DRBG For Pseudorandom Data
+        </h2>
+        <p>
+            Although maximum bit strength is necessary for purposes like key generation, the aforementioned method of
+            extracting entropy from a running system is very slow in practice. For weaker uses like nonces,
+            initialization vectors, and salts, a compromise can be made in the strength reserve of the required data to
+            achieve a higher bit rate. Xrand has a Deterministic Random Bit Generator (DRBG) to serve such purposes,
+            which is based on the CTR_DRBG mechanism specified by <a
+                href="https://csrc.nist.gov/pubs/sp/800/90/a/r1/final">
+                SP 800-90A</a>. This implementation uses AES-256 in counter mode as the underlying block cipher without
+            a
+            derivation function or prediction resistance.
+        <p></p>
+        The DRBG is periodically seeded with full entropy data from the main RNG and the pseudorandom bits are generated
+        by repeatedly updating the internal state of the DRBG using the AES operation with the random data as the key
+        and
+        a sequentially updated 128-bit counter.
+        </p>
+        <h2>
+            References And Design Origins
+        </h2>
+        <p>
+            The Random Number Generator is based on the following publications and existing designs:
+        </p>
+        <ul>
+            <li>Cryptographic Random Numbers by Carl Ellison.</li>
+            <li>Software Generation of Practically Strong Random Numbers by Peter Gutmann.</li>
+            <li>Random Number Generators - Principles and Practices by David Johnston</li>
+            <li>The <a href="http://www.truecrypt.org">TrueCrypt</a> Random Number Generator.</li>
+            <li>The <a href="https://gnupg.org/software/libgcrypt/index.html">GnuPG</a> Random-Number Subsystem
+                Architecture.</a></li>
+        </ul>
+        <hr />
+        <p style="font-size: 14px; font-weight: 700;">
+            Written by Vibhav Tiwari for Xrand
+        </p>
+    </div>
+</body>
+
+</html>
