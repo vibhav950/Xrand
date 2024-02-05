@@ -6,12 +6,12 @@ C library for cryptographically secure random number generation.
 
 ## Features
 
-* Generation of random data with high-security strength - the randomness pool maintains a high entropy reserve for all key, nonce, salt, IV, and token generation purposes.
+* Generation of random data with high security strength - the randomness pool maintains a high entropy reserve for all key, nonce, salt, IV, and token generation purposes.
 * High statistical correlation with observations of ideal random bitstrings and built-in measures to prevent the possibility of computing predecessors upon knowledge of an output subsequence.
-* Provides a fast SP 800-90A DRBG for generating large volumes of random data for uses like wiping disk sectors prior to disk encryption and SSL/TLS key generation on high-traffic servers.
-* Does not rely on user interaction for gathering randomness and, therefore, suitable for encryption on unattended network nodes or servers, provided there is enough activity on the system.
+* Fast SP 800-90A DRBG for generating large volumes of random data for uses like wiping disk sectors before encryption and SSL/TLS key generation on high-traffic servers.
+* Not reliant on user interaction for gathering randomness, making it suitable for use on unattended systems acting as network nodes or servers.
 
-## Compatibility state
+## Compatibility State
 
 Currently only compatible with `Win32` systems.
 
