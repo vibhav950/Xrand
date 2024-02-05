@@ -18,13 +18,18 @@
 #include "rand/ctr_drbg.h"
 #include "rand/rngw32.h"
 #include "common/endianness.h"
+#include "common/defs.h"
 
-/* Add a 32-bit big-endian unsigned value to
-   the last 4 bytes of the counter */
+/* Add a 32-bit value to the last 4 bytes of the counter,
+   represented in big-endian format */
 static inline void _ctr_drbg_incr32 (CTR_DRBG_STATE *state, uint32_t n)
 {
+    #if defined(__LITTLE_ENDIAN__)
     state->V.words[3] = 
         BSWAP32(BSWAP32(state->V.words[3]) + n);
+    #else
+    state->V.words[3] = (state->V.words[3] + n);
+    #endif
 }
 
 /* Section 10.2.1.3.1 */
