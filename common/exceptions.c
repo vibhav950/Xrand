@@ -79,7 +79,7 @@ void handle_exception (ecode_t code, ecode_t fatal, ecode_t mswec, ecode_t line)
     {
         time_t _t = time(NULL);
         struct tm _tm = *localtime(&_t);
-        FILE* _fpLog = fopen("./logs/crashdebug.log", "a+");
+        FILE* _fpLog = fopen("../logs/crashdebug.log", "a+");
         if (_fpLog)
         {
             fprintf(_fpLog, 
@@ -112,7 +112,7 @@ void dump_log (ecode_t code, ecode_t fatal, ecode_t mswec, ecode_t line)
 {
     time_t _t = time(NULL);
     struct tm _tm = *localtime(&_t);
-    FILE* _fpLog = fopen("./logs/crashdebug.log", "a+");
+    FILE* _fpLog = fopen("../logs/crashdebug.log", "a+");
     if (_fpLog)
     {
         fprintf(_fpLog, 
