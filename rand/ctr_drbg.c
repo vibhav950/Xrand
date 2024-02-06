@@ -16,9 +16,7 @@
  */
 
 #include "rand/ctr_drbg.h"
-#include "rand/rngw32.h"
 #include "common/endianness.h"
-#include "common/defs.h"
 
 /* Add a 32-bit value to the last 4 bytes of the counter,
    represented in big-endian format */

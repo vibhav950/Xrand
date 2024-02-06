@@ -31,7 +31,6 @@
 #ifndef CTR_DRBG_H
 #define CTR_DRBG_H
 
-#include <inttypes.h>
 #include <string.h>
 #include "defs.h"
 #include "aes.h"
