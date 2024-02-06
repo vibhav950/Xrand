@@ -17,7 +17,7 @@ Currently only compatible with `Win32` systems.
 
 ## How to Use
 
-Clone the repo to your local machine and simply run `make` to check for compilation dependancies.
+Clone the repo to your local machine and simply run `make` to check for compilation dependencies.
 
 ## How to Contribute
 
@@ -25,4 +25,4 @@ To add relevant features or security fixes to the repo, add your contributions t
 
 ## Future Prospects and Upcoming Features
 
-Future versions will add/extend support for common security protocols and application-specific features like generation of PKCS keys, prime numbers and cryptographic tokens.
+Future versions will add/extend support for common security protocols like SSH, SSL, TLS, etc., and application-specific features like the generation of PKCS keys, prime numbers, and cryptographic tokens.
