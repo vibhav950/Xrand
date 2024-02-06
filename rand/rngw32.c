@@ -99,7 +99,7 @@ typedef struct _BUF_ST {
 #ifdef _WIN64
     #define AddPtr(x) Add64((uint64_t)x);
 #else
-    #define AddPtr(X) Add32((uint32_t)x);
+    #define AddPtr(x) Add32((uint32_t)x);
 #endif
 
 /* Adding multiple bytes to the pool */
@@ -231,13 +231,12 @@ BOOL RandPoolInit(void)
            generation algorithm  for BCryptGenRandom() which is the
            AES-256 counter mode based random  generator  as defined
            in SP800-90. 
-           
-           Note: It is strongly advised to refrain  from the use of
-           BCRYPT_RNG_DUAL_EC_ALGORITHM due  to security   concerns
-           regarding the existance  of a potential backdoor  to the
-           SP800-90   non-compliant    Dual-EC   DRBG based  random
-           generator.  This algorithm has been removed from the CNG
-           API beginning from Windows 10. */
+
+           Note: If it is available,  do not use BCRYPT_RNG_ALGORITHM
+           as the RNG algorithm for BCryptGenRandom() due to security
+           concerns regarding  the existence of  a potential backdoor
+           to the SP800-90 non-compliant DUAL_EC_DRBG. This algorithm
+           was removed from the CNG beginning from Windows 10. */
         if (BCryptOpenAlgorithmProvider(
                 &hBCryptProv,
                 BCRYPT_RNG_ALGORITHM,
@@ -357,7 +356,7 @@ void RandCleanStop(void)
     nCurrentPoolReadPos = 0;
 }
 
-/* The thread procedure called periodically to poll system entropy. */
+/* The thread procedure called periodically to poll for system entropy. */
 unsigned __stdcall FastPollThreadProc(void *_dummy)
 {
     UNREFERENCED_PARAMETER(_dummy);
@@ -523,21 +522,20 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 /**
  * Capture the mouse and keyboard using low level hooks.
  * 
- * Set up the hooks and the message  loop which runs  until
- * either of the callback procedures send a WM_QUIT message
- * once a sufficient number of user events  have been added 
- * to the pool.
+ * Install the  hooks and keep the  message pump alive till
+ * either of the callback procedures sends a WM_QUIT to the
+ * thread's message queue.
  * 
  * Note: Since low  level hooks  require a message loop and
  * tend to  slow down  the application,  I find it  best to
  * add user-sourced entropy only when necessary,  for e.g.,
- * before the user  has made a  request to fetch bytes from
- * the pool to  generate a key.  The number of user  events
- * required  before  the message  loop  can  exit has  been
- * chosen to ensure that the random data  added  covers the
- * entire length of the pool at least once. The pool mixing
- * function is  called at least  once after AddUserEvents()
- * has successfully returned.
+ * before the  user requests for bytes.  The number of user
+ * events required  before  the message loop  can  exit has
+ * been chosen to ensure that the random data added  covers
+ * the entire  length of the  pool at least once.  The pool
+ * mixing  function is  called  before AddUserEvents()  can
+ * successfully return to diffuse the  added data  over the
+ * entire pool.
  */
 BOOL AddUserEvents(void)
 {
@@ -642,7 +640,7 @@ BOOL RandFastPoll(void)
 
     AddPtr(GetActiveWindow());      /* Active window handle */
     AddPtr(GetForegroundWindow());  /* Foreground window handle */
-    AddPtr(GetShellWindow());       /* Handle to shell's desktop window */
+    AddPtr(GetShellWindow());       /* Handle to shell desktop window */
     AddPtr(GetCapture());           /* Handle to window with mouse capture */
     AddPtr(GetDesktopWindow());     /* Desktop window handle */
     AddPtr(GetFocus());             /* Handle to window with keyboard focus */
@@ -650,8 +648,8 @@ BOOL RandFastPoll(void)
     EnumWindows(EnumWindowsProc, 0); /* Enumerate all top-level windows */
 
     AddPtr(GetClipboardOwner());    /* Clipboard owner handle */
-    AddPtr(GetClipboardViewer());   /* Handle to the clpboard starting
-                                       window of the clipboard viewer chain */
+    AddPtr(GetClipboardViewer());   /* Handle to the starting window in
+                                       the clipboard viewer chain */
     if (OpenWindowStationW(_T("WinSta0"), FALSE, WINSTA_ACCESSCLIPBOARD))
         Add32(GetClipboardSequenceNumber());    /* Clipboard sequence number for
                                                    the current window station */
