@@ -18,59 +18,18 @@
 #ifndef DEFS_H
 #define DEFS_H
 
-#define _XR_VER_ "1.0.1"
-
-// Xrand is only WIN32 compatible as of version 1.0.1
-#ifndef _WIN32
-#error "Only Windows compatible"
-#endif
-
-// Securely clear memory containing secrets
-#ifdef _WIN32
-#define zeroize(ptr, len) RtlSecureZeroMemory(ptr, len)
-#else
-/**
- * Provide a secure way to clear a block of memory by
- * declaring the pointer volatile so that the compiler
- * must de-reference the pointer to memset therefore
- * preventing it from optimizing away the call to memset.
- */
-#include <string.h>
-typedef void *(*memset_t)(void *_p, int _zv, size_t _nc);
-static volatile memset_t __zeroize = memset;
-#define zeroize(ptr, len) __zeroize(ptr, 0, len)
-#endif
-
-// The size of the memory to be copied must be a multiple of 32
-#define copy32(dst, src, size) do {\
-    volatile __int32 *d = (volatile __int32*)(dst);\
-    volatile __int32 *s = (volatile __int32*)(src);\
-    size_t c = (size/4);\
-    while (c--) *d++ = *s++;\
-} while (0)
-
-#define zcopy32(dst, src, size) do {\
-    volatile __int32 *d = (volatile __int32*)(dst);\
-    volatile __int32 *s = (volatile __int32*)(src);\
-    size_t c = (size/4);\
-    while (c--) {\
-        *d++ = *s;\
-        *s++ = 0;\
-    }\
-} while(0)
-
-#define ALIGN(_N)    __attribute__( ( aligned(_N) ) )
+#define XRAND_VERSION "1.0.1"
 
 #define IN
 #define OUT
 
-#define INLINE static inline
-
 #ifdef __cplusplus
-#define EXTERNC extern "C"
+    #define EXTERNC extern "C"
 #else
-#define EXTERNC
+    #define EXTERNC
 #endif
+
+#define INLINE static inline
 
 #include <stdint.h>
 
@@ -109,23 +68,64 @@ typedef enum
 
 #define ASSERT(_stmt) do { if (SUCCESS != (_stmt)) exit(1); } while(0)
 
-#define MAX_PATH 256
+#ifndef MAX_PATH
+    #define MAX_PATH 256
+#endif
 
-#include <immintrin.h>
+// Securely clear memory containing secrets
+#ifdef _WIN32
+#define zeroize(ptr, len) RtlSecureZeroMemory(ptr, len)
+#else
+/**
+ * Provide a secure way to clear a block of memory by
+ * declaring the pointer volatile so that the compiler
+ * must always dereference it, and therefore cannot
+ * optimize away the call to memset.
+ */
+#include <string.h>
+typedef void *(*memset_t)(void *_p, int _zv, size_t _nc);
+static volatile memset_t __memz = memset;
+#define zeroize(ptr, len) __memz(ptr, 0, len)
+#endif
+
+// The size of the memory to be copied must be a multiple of 32
+#define copy32(dst, src, size) do {\
+    volatile __int32 *d = (volatile __int32*)(dst);\
+    volatile __int32 *s = (volatile __int32*)(src);\
+    size_t c = (size/4);\
+    while (c--) *d++ = *s++;\
+} while (0)
+
+#define zcopy32(dst, src, size) do {\
+    volatile __int32 *d = (volatile __int32*)(dst);\
+    volatile __int32 *s = (volatile __int32*)(src);\
+    size_t c = (size/4);\
+    while (c--) {\
+        *d++ = *s;\
+        *s++ = 0;\
+    }\
+} while(0)
+
+#define ALIGN(_N)    __attribute__( ( aligned(_N) ) )
+
 #include "endianness.h"
 
 #define BSWAP16(_x) bswap16(_x)
 #define BSWAP32(_x) bswap32(_x)
 #define BSWAP64(_x) bswap64(_x)
 
+#include <intrin.h>
+
+#pragma intrinsic(_rotl8, _rotl16, _rotr8, _rotr16)
+
 #define ROTL8(_x, _s) (_rotl8((_x), (_s)))
 #define ROTL16(_x, _s) (_rotl16((_x), (_s)))
-#define ROTL32(_x, _s) (_rotl32((_x), (_s)))
+#define ROTL32(_x, _s) (_rotl((_x), (_s)))
 #define ROTL64(_x, _s) (_rotl64((_x), (_s)))
 
 #define ROTR8(_x, _s) (_rotr8((_x), (_s)))
 #define ROTR16(_x, _s) (_rotr16((_x), (_s)))
-#define ROTR32(_x, _s) (_rotr32((_x), (_s)))
+#define ROTR32(_x, _s) (_rotr((_x), (_s)))
 #define ROTR64(_x, _s) (_rotr64((_x), (_s)))
 
 #endif /* DEFS_H */
