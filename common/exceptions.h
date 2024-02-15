@@ -31,7 +31,7 @@
 #if __has_builtin(__builtin_trap)
 #define kill __builtin_trap
 #else
-#define kill *(char *)0 = 0
+#define kill(_) { *(char *)0 = 0; }
 #endif
 
 /* ERROR codes */

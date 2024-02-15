@@ -22,8 +22,8 @@
 extern "C" {
 #endif
 
-#include "common/defs.h"
 #include <windows.h>
+#include "common/defs.h"
 
 // OpenSSL is required for cryptographic utilities
 #if __has_include(<openssl/sha.h>)

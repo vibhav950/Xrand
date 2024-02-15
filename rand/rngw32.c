@@ -915,7 +915,7 @@ BOOL RandSlowPoll(void)
         for (nDrive = 0;; nDrive++)
         {
             /* Check whether this drive can be accessed */
-            snprintf(szDevice, 30, _T("\\\\.\\PhysicalDrive%d"), nDrive);
+            snprintf(szDevice, 32, _T("\\\\.\\PhysicalDrive%d"), nDrive);
             hDevice = CreateFile(szDevice,
                                  0,
                                  FILE_SHARE_READ | FILE_SHARE_WRITE,
@@ -962,11 +962,11 @@ BOOL RandSlowPoll(void)
             return FALSE;
     }
     else
-    /* Query unpredictable system data using the NT native API
-       function  NtQuerySystemInformation(),  which unlike the
-       Win32  performance query API,  doesn't access the  data
-       indirectly using pseudo-registry keys, and is therefore
-       much faster. */
+    /* Query system data using the NT native API function
+       NtQuerySystemInformation(), which unlike the Win32
+       performance  query  API,  doesn't access  the data
+       indirectly  using  pseudo-registry  keys,  and  is
+       therefore much faster. */
     {
         ULONG ulSize;
         PVOID buf;
@@ -974,9 +974,9 @@ BOOL RandSlowPoll(void)
         /* We only query info for certain ID's with highly unpredictable
            data instead  of querying all  readable  information types to
            avoid  overheads for  polls  that  do not return  much usable 
-           entropy per-call. Either way these ID's alone read about 1.4K
-           bytes (not all useful of course) which is adequate for a pool
-           size less than 1 KB. */
+           randomness per-call.  Either way these ID's  alone read about
+           1.4K bytes (not all useful of course) which is adequate for a
+           pool size less than 1 KB. */
 
         /* The SYSTEM_INFORMATION_CLASS codes */
         static const uint8_t dwType[] =\
