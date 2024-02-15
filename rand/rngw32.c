@@ -526,15 +526,15 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
  * either of the callback procedures sends a WM_QUIT to the
  * thread's message queue.
  * 
- * Note: Since low  level hooks  require a message loop and
- * tend to  slow down  the application,  I find it  best to
- * add user-sourced entropy only when necessary,  for e.g.,
- * before the  user requests for bytes.  The number of user
- * events required  before  the message loop  can  exit has
- * been chosen to ensure that the random data added  covers
- * the entire  length of the  pool at least once.  The pool
- * mixing  function is  called  before AddUserEvents()  can
- * successfully return to diffuse the  added data  over the
+ * Note: Since low  level hooks  require a  message loop and
+ * tend to  slow down  the  application,  I find it  best to
+ * add user-supplied entropy only when necessary,  for e.g.,
+ * when the user has requested for bytes. The number of user
+ * events required  before  the message loop  can  exit  has
+ * been chosen to ensure that the random  data added  covers
+ * the entire  length of the  pool at  least once.  The pool
+ * mixing  function is  called  before  AddUserEvents()  can
+ * successfully  return to diffuse the  added data  over the
  * entire pool.
  */
 BOOL AddUserEvents(void)

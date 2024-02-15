@@ -22,12 +22,12 @@
    represented in big-endian format */
 static inline void _ctr_drbg_incr32 (CTR_DRBG_STATE *state, uint32_t n)
 {
-    #if defined(__LITTLE_ENDIAN__)
+#if defined(__LITTLE_ENDIAN__)
     state->V.words[3] = 
         BSWAP32(BSWAP32(state->V.words[3]) + n);
-    #else
+#else
     state->V.words[3] = (state->V.words[3] + n);
-    #endif
+#endif
 }
 
 /* Section 10.2.1.3.1 */
