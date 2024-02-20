@@ -80,11 +80,11 @@ void handle_exception (ecode_t code, ecode_t fatal, ecode_t mswec, ecode_t line)
 #if !defined(XR_NO_CRASH_DUMP)
         time_t _t = time(NULL);
         struct tm _tm = *localtime(&_t);
-        FILE* _fpLog = fopen("../../logs/crashdebug.log", "a+");
+        FILE* _fpLog = fopen("logs\\crashdebug.log", "at");
         if (_fpLog)
         {
             fprintf(_fpLog, 
-                    "[%d %02d %02d %02d:%02d:%02d] [LINE %d] ERR 0x%X (WIN 0x%X)\n",
+                    "[%d %02d %02d %02d:%02d:%02d] [LINE %d] ERR 0x%X (WIN32 ERR 0x%X)\n",
                     _tm.tm_year + 1900, _tm.tm_mon + 1, _tm.tm_mday, _tm.tm_hour, _tm.tm_min, _tm.tm_sec,
                     line,
                     code,
@@ -115,11 +115,11 @@ void dump_log (ecode_t code, ecode_t fatal, ecode_t mswec, ecode_t line)
 #if !defined(XR_NO_CRASH_DUMP)
     time_t _t = time(NULL);
     struct tm _tm = *localtime(&_t);
-    FILE* _fpLog = fopen("../logs/crashdebug.log", "a+");
+    FILE* _fpLog = fopen("logs\\crashdebug.log", "at");
     if (_fpLog)
     {
         fprintf(_fpLog, 
-                "[%d %02d %02d %02d:%02d:%02d] [LINE %d] ERR 0x%X (WIN 0x%X)\n",
+                "[%d %02d %02d %02d:%02d:%02d] [LINE %d] ERR 0x%X (WIN32 ERR 0x%X)\n",
                 _tm.tm_year + 1900, _tm.tm_mon + 1, _tm.tm_mday, _tm.tm_hour, _tm.tm_min, _tm.tm_sec,
                 line,
                 code,

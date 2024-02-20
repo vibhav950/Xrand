@@ -1353,6 +1353,9 @@ void RngMix(void)
  */
 bool RngFetchBytes(uint8_t *data, size_t len, int forceSlowPoll)
 {
+    if (!data)
+        return false;
+
     return RandFetchBytes(data, len, forceSlowPoll);
 }
 
