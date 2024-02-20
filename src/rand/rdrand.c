@@ -29,7 +29,7 @@
 #error "This file is Windows specific"
 #endif
 
-#include "rand/rdrand.h"
+#include "rdrand.h"
 #include <string.h>
 #include <intrin.h>
 
@@ -42,9 +42,9 @@ int check_is_intel(void)
 
     __get_cpuid(0, &__eax, &__ebx, &__ecx, &__edx);
 
-    if (memcmp((char *) &__ebx, "Genu", 4) == 0 &&
-        memcmp((char *) &__edx, "ineI", 4) == 0 &&
-        memcmp((char *) &__ecx, "ntel", 4) == 0)
+    if (memcmp((char *)&__ebx, "Genu", 4) == 0 &&
+        memcmp((char *)&__edx, "ineI", 4) == 0 &&
+        memcmp((char *)&__ecx, "ntel", 4) == 0)
         return 1;
     return 0;
 }
@@ -58,9 +58,9 @@ int check_is_amd(void)
 
     __get_cpuid(0, &__eax, &__ebx, &__ecx, &__edx);
 
-    if (memcmp((char *) &__ebx, "Auth", 4) == 0 &&
-        memcmp((char *) &__edx, "enti", 4) == 0 &&
-        memcmp((char *) &__ecx, "cAMD", 4) == 0)
+    if (memcmp((char *)&__ebx, "Auth", 4) == 0 &&
+        memcmp((char *)&__edx, "enti", 4) == 0 &&
+        memcmp((char *)&__ecx, "cAMD", 4) == 0)
         return 1;
     return 0;
 }

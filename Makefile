@@ -1,60 +1,62 @@
-DIR_BIN := ./bin
+CC := gcc
+CFLAGS := -Wpedantic -Wall -I./src/
+CXXFLAGS := -std=c11 -Wall
 
-CC ?= gcc
-CFLAGS := -w -I.
+BIN_DIR := ./bin
+SRC_DIR := ./src
+LOG_DIR := ./logs
 
-dir_common := ./common
-srcs_common := $(dir_common)/exceptions.c
-objs_common := $(DIR_BIN)/exceptions.o
+MKDIR := mkdir -p
+RM := rm -f
 
-dir_jent := ./jitterentropy
-srcs_jent := $(dir_jent)/jitterentropy-base.c \
-	   		 $(dir_jent)/jitterentropy-gcd.c \
-	   		 $(dir_jent)/jitterentropy-health.c \
-	   		 $(dir_jent)/jitterentropy-noise.c \
-	   		 $(dir_jent)/jitterentropy-sha3.c \
-	   		 $(dir_jent)/jitterentropy-timer.c
-# Jitternentropy modules compiled with optimizations off
-objs_jent := $(addprefix $(DIR_BIN)/, $(notdir $(srcs_jent:.c=.o)))
-flags_jent := -O0
+COMMON_PATH := $(SRC_DIR)/common
+COMMON_SRCS := $(COMMON_PATH)/exceptions.c
+COMMON_OBJS := $(BIN_DIR)/exceptions.o
 
-dir_crypto := ./crypto
-srcs_crypto := $(dir_crypto)/aes.c \
-			   $(dir_crypto)/crc.c
-objs_crypto := $(addprefix $(DIR_BIN)/, $(notdir $(srcs_crypto:.c=.o)))
-# Compile with optimizations enabled
-flags_crypto := -msse2 -msse -march=native -maes -O3
+JENT_PATH := $(SRC_DIR)/jitterentropy
+JENT_SRCS := $(JENT_PATH)/jitterentropy-base.c \
+	   		 $(JENT_PATH)/jitterentropy-gcd.c \
+	   		 $(JENT_PATH)/jitterentropy-health.c \
+	   		 $(JENT_PATH)/jitterentropy-noise.c \
+	   		 $(JENT_PATH)/jitterentropy-sha3.c \
+	   		 $(JENT_PATH)/jitterentropy-timer.c
+JENT_OBJS := $(addprefix $(BIN_DIR)/, $(notdir $(JENT_SRCS:.c=.o)))
+JENT_FLAGS := -O0
 
-# Crypto libraries
+CRYPTO_PATH := $(SRC_DIR)/crypto
+CRYPTO_SRCS := $(CRYPTO_PATH)/aes.c \
+			   $(CRYPTO_PATH)/crc.c
+CRYPTO_OBJS := $(addprefix $(BIN_DIR)/, $(notdir $(CRYPTO_SRCS:.c=.o)))
+CRYPTO_FLAGS := -msse2 -msse -march=native -maes -O3
+
 DEPS := -L. -lssl -lcrypto -lbcrypt
 
-dir_rand := ./rand
-srcs_rand := $(dir_rand)/rdrand.c \
-			 $(dir_rand)/rngw32.c \
-			 $(dir_rand)/trivium.c \
-			 $(dir_rand)/random.c
-objs_rand := $(addprefix $(DIR_BIN)/, $(notdir $(srcs_rand:.c=.o)))
+RAND_PATH := $(SRC_DIR)/rand
+RAND_SRCS := $(RAND_PATH)/rdrand.c \
+			 $(RAND_PATH)/rngw32.c \
+			 $(RAND_PATH)/trivium.c \
+			 $(RAND_PATH)/random.c
+RAND_OBJS := $(addprefix $(BIN_DIR)/, $(notdir $(RAND_SRCS:.c=.o)))
 
-EXE := $(DIR_BIN)/xrand
+EXE := $(BIN_DIR)/xrand-test
 
 .PHONY: all
-
 all: $(EXE) clean
 
-$(EXE): $(objs_common) $(objs_rand) $(objs_crypto) $(objs_jent)
-	$(CC) $(objs_common) $(objs_rand) $(objs_crypto) $(objs_jent) $(DEPS) -o $(EXE)
+$(EXE): $(COMMON_OBJS) $(RAND_OBJS) $(CRYPTO_OBJS) $(JENT_OBJS)
+	$(CC) $(COMMON_OBJS) $(RAND_OBJS) $(CRYPTO_OBJS) $(JENT_OBJS) $(DEPS) -o $(EXE)
 
-$(DIR_BIN)/%.o: $(dir_common)/%.c
+$(BIN_DIR)/%.o: $(COMMON_PATH)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(DIR_BIN)/%.o: $(dir_jent)/%.c
-	$(CC) $(CFLAGS) $(flags_jent) -c $< -o $@
+$(BIN_DIR)/%.o: $(JENT_PATH)/%.c
+	$(CC) $(CFLAGS) $(JENT_FLAGS) -c $< -o $@
 
-$(DIR_BIN)/%.o: $(dir_crypto)/%.c
-	$(CC) $(CFLAGS) $(flags_crypto) -c $< -o $@
+$(BIN_DIR)/%.o: $(CRYPTO_PATH)/%.c
+	$(CC) $(CFLAGS) $(CRYPTO_FLAGS) -c $< -o $@
 
-$(DIR_BIN)/%.o: $(dir_rand)/%.c
+$(BIN_DIR)/%.o: $(RAND_PATH)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(DIR_BIN)/*.o
+	$(RM) $(COMMON_OBJS) $(RAND_OBJS) $(CRYPTO_OBJS) $(JENT_OBJS)

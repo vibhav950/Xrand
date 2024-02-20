@@ -62,7 +62,7 @@ BOOL RandFetchBytes (uint8_t* out, size_t len, int forceSlowPoll);
 BOOL CALLBACK EnumWindowsProc (HWND hWnd, LPARAM lParam);
 LRESULT CALLBACK MouseProc (int nCode, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK KeyboardProc (int nCode, WPARAM wParam, LPARAM lParam);
-static unsigned __stdcall FastPollThreadProc (void* _dummy);
+static unsigned __stdcall FastPollThreadProc (void *_dummy);
 
 bool RngStart (void);
 void RngStop (void);

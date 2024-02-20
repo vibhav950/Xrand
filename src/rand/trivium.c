@@ -26,8 +26,8 @@
 
 
 #include "common/defs.h"
-#include "rand/rngw32.h"
-#include "rand/trivium.h"
+#include "rngw32.h"
+#include "trivium.h"
 
 /* 288-bit internal state */
 static uint32_t x1, x2, x3, x4, x5, x6, x7, x8, x9;

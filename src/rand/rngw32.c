@@ -15,8 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "rand/rngw32.h"
-#include "rand/rdrand.h"
+#include "rngw32.h"
+#include "rdrand.h"
 #include "common/exceptions.h"
 #include "jitterentropy/jitterentropy.h"
 #include "crypto/crc.h"
@@ -146,25 +146,24 @@ static void AddBuf(uint8_t *buf, size_t size)
 
 /* Type definitions and function pointers to call the CNG API functions */
 typedef NTSTATUS(WINAPI *BCRYPTOPENALGORITHMPROVIDER)(
-            BCRYPT_ALG_HANDLE *phAlgorithm,
-            LPCWSTR pszAlgId,
-            LPCWSTR pszImplementation,
-            ULONG dwFlags);
+    BCRYPT_ALG_HANDLE *phAlgorithm,
+    LPCWSTR pszAlgId,
+    LPCWSTR pszImplementation,
+    ULONG dwFlags);
 
 typedef NTSTATUS(WINAPI *BCRYPTGENRANDOM)(
-            BCRYPT_ALG_HANDLE hAlgorithm,
-            PUCHAR pbBuffer,
-            ULONG cbBuffer,
-            ULONG dwFlags);
+    BCRYPT_ALG_HANDLE hAlgorithm,
+    PUCHAR pbBuffer,
+    ULONG cbBuffer,
+    ULONG dwFlags);
 
 typedef NTSTATUS(WINAPI *BCRYPTCLOSEALGORITHMPROVIDER)(
-            BCRYPT_ALG_HANDLE hAlgorithm,
-            ULONG dwFlags);
+    BCRYPT_ALG_HANDLE hAlgorithm,
+    ULONG dwFlags);
 
 static BCRYPTOPENALGORITHMPROVIDER pBCryptOpenAlgorithmProvider = NULL;
 static BCRYPTGENRANDOM pBCryptGenRandom = NULL;
 static BCRYPTCLOSEALGORITHMPROVIDER pBCryptCloseAlgorithmProvider = NULL;
-
 
 /**
  * Initialize the  Random Number Generator.   Mount the pool  onto
@@ -201,9 +200,9 @@ BOOL RandPoolInit(void)
     }
 
     bDidRandPoolInit = TRUE;
-    
+
     dwWin32CngLastErr = ERROR_SUCCESS;
-    
+
     /* Load the BCrypt library and initialize the CNG API function pointers */
     if ((hBCrypt = LoadLibrary("bcrypt.dll")) == NULL)
     {
@@ -219,7 +218,7 @@ BOOL RandPoolInit(void)
             (BCRYPTGENRANDOM)GetProcAddress(hBCrypt, "BCryptGenRandom");
         pBCryptCloseAlgorithmProvider =
             (BCRYPTCLOSEALGORITHMPROVIDER)GetProcAddress(hBCrypt, "BCryptCloseAlgorithmProvider");
-        
+
         if (!pBCryptOpenAlgorithmProvider || !pBCryptGenRandom || !pBCryptCloseAlgorithmProvider)
         {
             dwWin32CngLastErr = GetLastError();
@@ -230,7 +229,7 @@ BOOL RandPoolInit(void)
         /* Use BCRYPT_RNG_ALGORITHM as the underlying random number
            generation algorithm  for BCryptGenRandom() which is the
            AES-256 counter mode based random  generator  as defined
-           in SP800-90. 
+           in SP800-90.
 
            Note: If it is available,  do not use BCRYPT_RNG_ALGORITHM
            as the RNG algorithm for BCryptGenRandom() due to security
@@ -270,7 +269,6 @@ err:
     RandCleanStop();
     return FALSE;
 }
-
 
 /**
  * Safely stop RNG, release all hooks,  terminate the thread, reset
@@ -357,7 +355,7 @@ void RandCleanStop(void)
 }
 
 /* The thread procedure called periodically to poll for system entropy. */
-unsigned __stdcall FastPollThreadProc(void *_dummy)
+static unsigned __stdcall FastPollThreadProc(void *_dummy)
 {
     UNREFERENCED_PARAMETER(_dummy);
 
@@ -396,9 +394,8 @@ BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam)
     DWORD dwProcessId;
     GUITHREADINFO gui;
     WINDOWINFO wi;
-    RECT rect;
 
-    AddPtr(hWnd);   /* The window handle */
+    AddPtr(hWnd); /* The window handle */
     dwThreadId = GetWindowThreadProcessId(hWnd, (LPDWORD)&dwProcessId);
     Add32(dwThreadId);  /* The window thread process ID */
     Add32(dwProcessId); /* The window thread ID */
@@ -416,7 +413,7 @@ BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam)
 }
 
 /**
- * Capture the mouse event, and if the mouse has moved, add its 
+ * Capture the mouse event, and if the mouse has moved, add its
  * CRC +  the CRC of the time delta between the current and the
  * previous event to the pool.
  */
@@ -456,7 +453,7 @@ LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
             timeCrc = UPDC32((Ptr8(dwTimeDelta))[i], timeCrc);
 
         EnterCriticalSection(&randCritSec);
-        Add32((uint32_t) (crc + timeCrc));
+        Add32((uint32_t)(crc + timeCrc));
         LeaveCriticalSection(&randCritSec);
 
         prevPt = lpMouse->pt;
@@ -469,7 +466,7 @@ LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
  * Capture the keyboard event, and if the key is different from
  * either of the previous two events,  add its CRC + the CRC of
  * the time delta to the pool.
-*/
+ */
 LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
     static int prevKey, prevPrevKey;
@@ -508,9 +505,9 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
             timeCrc = UPDC32((Ptr8(dwTimeDelta))[i], timeCrc);
 
         EnterCriticalSection(&randCritSec);
-        Add32((uint32_t) (crc + timeCrc));
+        Add32((uint32_t)(crc + timeCrc));
         LeaveCriticalSection(&randCritSec);
-        
+
         prevPrevKey = prevKey;
         prevKey = key;
     }
@@ -518,14 +515,13 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
     return CallNextHookEx(hKbdHook, nCode, wParam, lParam);
 }
 
-
 /**
  * Capture the mouse and keyboard using low level hooks.
- * 
+ *
  * Install the  hooks and keep the  message pump alive till
  * either of the callback procedures sends a WM_QUIT to the
  * thread's message queue.
- * 
+ *
  * Note: Since low  level hooks  require a  message loop and
  * tend to  slow down  the  application,  I find it  best to
  * add user-supplied entropy only when necessary,  for e.g.,
@@ -620,45 +616,53 @@ BOOL RandFastPoll(void)
         uint64_t rand;
 
         /* Request 16 bytes from RDRAND */
-        if (bHasRdrand && rdrand64_step(&rand))
-            Add64(rand);
-        if (bHasRdrand && rdrand64_step(&rand))
-            Add64(rand);
+        if (bHasRdrand)
+        {
+            if (rdrand64_step(&rand))
+                Add64(rand);
+
+            if (rdrand64_step(&rand))
+                Add64(rand);
+        }
 
         /* Request 16 bytes from RDSEED */
-        if (bHasRdseed && rdseed64_step(&rand))
-            Add64(rand);
-        if (bHasRdseed && rdseed64_step(&rand))
-            Add64(rand);
+        if (bHasRdseed)
+        {
+            if (rdseed64_step(&rand))
+                Add64(rand);
+
+            if (rdseed64_step(&rand))
+                Add64(rand);
+        }
     }
 
-    Add32(GetCurrentProcessId());  /* Process ID for the current process */
-    AddPtr(GetCurrentProcess());   /* Pseudo handle for the current processs */
+    Add32(GetCurrentProcessId()); /* Process ID for the current process */
+    AddPtr(GetCurrentProcess());  /* Pseudo handle for the current processs */
 
-    Add32(GetCurrentThreadId());  /* Thread ID for the current thread */
-    AddPtr(GetCurrentThread());   /* Pseudo handle for the current thread */
+    Add32(GetCurrentThreadId()); /* Thread ID for the current thread */
+    AddPtr(GetCurrentThread());  /* Pseudo handle for the current thread */
 
-    AddPtr(GetActiveWindow());      /* Active window handle */
-    AddPtr(GetForegroundWindow());  /* Foreground window handle */
-    AddPtr(GetShellWindow());       /* Handle to shell desktop window */
-    AddPtr(GetCapture());           /* Handle to window with mouse capture */
-    AddPtr(GetDesktopWindow());     /* Desktop window handle */
-    AddPtr(GetFocus());             /* Handle to window with keyboard focus */
+    AddPtr(GetActiveWindow());     /* Active window handle */
+    AddPtr(GetForegroundWindow()); /* Foreground window handle */
+    AddPtr(GetShellWindow());      /* Handle to shell desktop window */
+    AddPtr(GetCapture());          /* Handle to window with mouse capture */
+    AddPtr(GetDesktopWindow());    /* Desktop window handle */
+    AddPtr(GetFocus());            /* Handle to window with keyboard focus */
 
     EnumWindows(EnumWindowsProc, 0); /* Enumerate all top-level windows */
 
-    AddPtr(GetClipboardOwner());    /* Clipboard owner handle */
-    AddPtr(GetClipboardViewer());   /* Handle to the starting window in
-                                       the clipboard viewer chain */
-    if (OpenWindowStationW(_T("WinSta0"), FALSE, WINSTA_ACCESSCLIPBOARD))
-        Add32(GetClipboardSequenceNumber());    /* Clipboard sequence number for
-                                                   the current window station */
-    AddPtr(GetOpenClipboardWindow()); /* Handle to the window with the clipboard open */
+    AddPtr(GetClipboardOwner());  /* Clipboard owner handle */
+    AddPtr(GetClipboardViewer()); /* Handle to the starting window in
+                                     the clipboard viewer chain */
+    if (OpenWindowStationW(L"WinSta0", FALSE, WINSTA_ACCESSCLIPBOARD))
+        Add32(GetClipboardSequenceNumber());         /* Clipboard sequence number for
+                                                        the current window station */
+    AddPtr(GetOpenClipboardWindow());                /* Handle to the window with the clipboard open */
     AddPtr(GetLastActivePopup(GetClipboardOwner())); /* Clipboard owner's last
                                                         active pop-up */
 
-    Add8(GetKBCodePage());  /* Current code page */
-    Add8(GetOEMCP());       /* Current OEM code page ID */
+    Add8(GetKBCodePage()); /* Current code page */
+    Add8(GetOEMCP());      /* Current OEM code page ID */
 
     Add32(GetCurrentTime()); /* Milliseconds since windows started */
 
@@ -672,9 +676,9 @@ BOOL RandFastPoll(void)
     Add32(GetQueueStatus(QS_ALLEVENTS)); /* Message types in thread's message queue */
 
     /* Multiword sytem information */
-    GetCaretPos(&point);    /* Current caret position */
+    GetCaretPos(&point); /* Current caret position */
     AddBuf(Ptr8(point), sizeof(POINT));
-    GetCursorPos(&point);   /* Current mouse cursor position */
+    GetCursorPos(&point); /* Current mouse cursor position */
     AddBuf(Ptr8(point), sizeof(POINT));
 
     /* Get percent of memory in use, bytes of physical memory, bytes of
@@ -709,7 +713,7 @@ BOOL RandFastPoll(void)
     /* Get the current system date and time with the
        highest possible level of precision (<1us) in
        the Coordinated Universal Time  (UTC) format. */
-    GetSystemTimePreciseAsFileTime((LPFILETIME *) &systemTimeAsFileTime);
+    GetSystemTimePreciseAsFileTime((LPFILETIME)&systemTimeAsFileTime);
     AddBuf(Ptr8(systemTimeAsFileTime), sizeof(LPFILETIME));
 
     /* According  to  MS docs,  the  majority   of  Windows   systems
@@ -721,12 +725,12 @@ BOOL RandFastPoll(void)
        and overhead  (in the order of 10s or 100s of machine cycles),
        however the  peformance  varies  depending on  the  underlying
        architecture and the OS version.
-       
+
        On Windows RT,  Windows 11,  and Windows 10  devices using Arm
        processors,  the  performance counter is  based  on  either  a
        proprietary platform counter or the system counter provided by
        the Arm Generic Timer if the platform is so equipped.
-       
+
        Although QPC can fail on systems lacking the required hardware,
        on systems that  run  Windows XP or later,  the  function  will
        always return with success. */
@@ -735,12 +739,12 @@ BOOL RandFastPoll(void)
         AddBuf(Ptr8(ticks), sizeof(LARGE_INTEGER));
     }
 
-    #if defined(__x86_64__)
+#if defined(__x86_64__)
     {
         /* x86-64 always has a TSC that can be read as an intrinsic. */
-        Add64((uint64_t) __rdtsc());
+        Add64((uint64_t)__rdtsc());
     }
-    #endif
+#endif
 
     /* Mix the pool */
     RandPoolMix();
@@ -803,9 +807,8 @@ typedef struct
 
 /**
  * Data structures and pre-processors to read data via the
- * GPU-Z shared memory interface.
- * (See https://www.techpowerup.com/forums/threads/gpu-z-\
- * shared-memory-layout.65258).
+ * GPU-Z shared memory interface (see
+ * https://www.techpowerup.com/forums/threads/gpu-z-shared-memory-layout.65258).
  *
  * The memory layout is incredibly wasteful since not all
  * of this data is useful entropy. It is therefore a good
@@ -878,7 +881,7 @@ BOOL RandSlowPoll(void)
         {
             /* Poll data from the Jitter RNG with osr = 1.
 
-               According to SP 800-90B, each raw data sample consists of 
+               According to SP 800-90B, each raw data sample consists of
                one timestamp delta, which is 64 bits long. It is assumed
                that only the least significant 4 bits of each  timestamp
                delta contains  any true entropy.  The JENT design states
@@ -927,7 +930,7 @@ BOOL RandSlowPoll(void)
                 break;
 
             /* Query the disk statistics for the current drive.
-            
+
                Note:  This only works if the user has turned on
                the disk performance counters with `diskperf -y`. */
             if (DeviceIoControl(hDevice,
@@ -973,19 +976,19 @@ BOOL RandSlowPoll(void)
 
         /* We only query info for certain ID's with highly unpredictable
            data instead  of querying all  readable  information types to
-           avoid  overheads for  polls  that  do not return  much usable 
+           avoid  overheads for  polls  that  do not return  much usable
            randomness per-call.  Either way these ID's  alone read about
            1.4K bytes (not all useful of course) which is adequate for a
            pool size less than 1 KB. */
 
         /* The SYSTEM_INFORMATION_CLASS codes */
-        static const uint8_t dwType[] =\
-        {
-            0x02, /* SystemPerformanceInformation */
-            0x08, /* SystemProcessorPerformanceInformation */
-            0x17, /* SystemInterruptInformation */
-            0x21, /* SystemExceptionInformation	*/
-        };
+        static const uint8_t dwType[] =
+            {
+                0x02, /* SystemPerformanceInformation */
+                0x08, /* SystemProcessorPerformanceInformation */
+                0x17, /* SystemInterruptInformation */
+                0x21, /* SystemExceptionInformation	*/
+            };
 
         for (int i = 0; i < count(dwType); ++i)
         {
@@ -1067,14 +1070,14 @@ BOOL RandSlowPoll(void)
         HKEY hKey;
 
         if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-                         L"SYSTEM\\CurrentControlSet\\Control\\ProductOptions",
+                         _T("SYSTEM\\CurrentControlSet\\Control\\ProductOptions"),
                          0, KEY_READ, &hKey) == ERROR_SUCCESS)
         {
             WCHAR szValue[32 + 8];
             dwSize = 32;
 
             isWorkstation = TRUE;
-            status = RegQueryValueEx(hKey, L"ProductType", 0, NULL,
+            status = RegQueryValueEx(hKey, _T("ProductType"), 0, NULL,
                                      (LPBYTE)szValue, &dwSize);
 
             if (status == ERROR_SUCCESS && wcscmp(szValue, L"WinNT"))
@@ -1124,8 +1127,7 @@ BOOL RandSlowPoll(void)
         LPBYTE lpBuffer;
 
         if (pNetStatisticsGet(NULL,
-                              (LPWSTR) (isWorkstation ?\
-                              L"LanmanWorkstation" : L"LanmanServer"),
+                              (LPWSTR)(isWorkstation ? L"LanmanWorkstation" : L"LanmanServer"),
                               0, 0, &lpBuffer) == 0)
         {
             pNetApiBufferSize(lpBuffer, &dwSize);
@@ -1235,7 +1237,7 @@ void RandPoolMix(void)
  * Fetch random data to the buffer by inverting, mixing and
  * adding the contents of the randomness pool to the output
  * buffer using modulo 2^8 addition to prevent state leaks.
-*/
+ */
 BOOL RandFetchBytes(uint8_t *data, size_t len, int forceSlowPoll)
 {
     if (len < 0)
@@ -1267,7 +1269,7 @@ BOOL RandFetchBytes(uint8_t *data, size_t len, int forceSlowPoll)
 
     if (bUserEventsEnabled && !AddUserEvents())
         return FALSE;
-    
+
     /* Mix the pool */
     if (!RandFastPoll())
         return FALSE;

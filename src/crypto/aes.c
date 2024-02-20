@@ -1,6 +1,6 @@
 /**
- * aes.c - Implementation for the AES-256 key schedule and encryption procedures
- * as provided in the 'Intel Advanced Encryption Standard (AES) Instruction Set'
+ * aes.c - Implementation for the AES-256 key schedule and encryption procedure
+ * as specified in the 'Intel Advanced Encryption Standard (AES) Instruction Set'
  * White Paper by Shay Gueron.
  *
  * LICENSE
@@ -22,7 +22,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "crypto/aes.h"
+#include "aes.h"
 
 static inline void KEY_256_ASSIST_1(__m128i *temp1, __m128i *temp2)
 {
