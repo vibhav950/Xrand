@@ -85,15 +85,14 @@ typedef struct _BUF_ST {
 } BUF, *PBUF;
 
 /* Add a single byte to the pool */
-#define AddByte(x) {\
-    if (nCurrentPoolWritePos % RNG_POOL_MIX_INTERVAL == 0) {\
-        RandPoolMix();\
-    }\
-    if (nCurrentPoolWritePos == RNG_POOL_SIZE) {\
-        nCurrentPoolWritePos = 0;\
-    }\
-    pRandPool[nCurrentPoolWritePos++] ^= (uint8_t) x;\
-    }
+#define AddByte(x)\
+    do {\
+        if (nCurrentPoolWritePos % RNG_POOL_MIX_INTERVAL == 0)\
+            RandPoolMix();\
+        if (nCurrentPoolWritePos == RNG_POOL_SIZE)\
+            nCurrentPoolWritePos = 0;\
+        pRandPool[nCurrentPoolWritePos++] ^= (uint8_t) x;\
+    } while(0)
 
 /* Add a pointer to the pool */
 #ifdef _WIN64
