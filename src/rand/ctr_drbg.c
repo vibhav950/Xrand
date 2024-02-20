@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "rand/ctr_drbg.h"
+#include "ctr_drbg.h"
 #include "common/endianness.h"
 
 /* Add a 32-bit value to the last 4 bytes of the counter,

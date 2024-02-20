@@ -20,9 +20,6 @@
 
 #define XRAND_VERSION "1.0.1"
 
-#define IN
-#define OUT
-
 #ifdef __cplusplus
     #define EXTERNC extern "C"
 #else
@@ -30,6 +27,9 @@
 #endif
 
 #define INLINE static inline
+
+#define IN
+#define OUT
 
 #include <stdint.h>
 
@@ -50,8 +50,14 @@ typedef unsigned __int64 u64;
 #define Ptr32(_ptr)     ((u32 *)(&(_ptr)))
 #define Ptr64(_ptr)     ((u64 *)(&(_ptr)))
 
+#ifndef max
 #define max(_a, _b)     (((_a) > (_b)) ? (_a) : (_b))
+#endif
+
+#ifndef min
 #define min(_a, _b)     (((_a) < (_b)) ? (_a) : (_b))
+#endif
+
 #define count(_arr)     (sizeof(_arr) / sizeof((_arr)[0]))
 
 typedef enum

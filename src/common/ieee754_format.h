@@ -25,7 +25,7 @@
 #ifndef IEEE754_FORMAT_H
 #define IEEE754_FORMAT_H
 
-#include "./endianness.h"
+#include "endianness.h"
 
 typedef union _ieee754_float_t {
     float f;

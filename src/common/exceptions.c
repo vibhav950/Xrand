@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "common/exceptions.h"
+#include "exceptions.h"
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
@@ -77,9 +77,10 @@ void handle_exception (ecode_t code, ecode_t fatal, ecode_t mswec, ecode_t line)
 {
     if (fatal)
     {
+#if !defined(XR_NO_CRASH_DUMP)
         time_t _t = time(NULL);
         struct tm _tm = *localtime(&_t);
-        FILE* _fpLog = fopen("../logs/crashdebug.log", "a+");
+        FILE* _fpLog = fopen("../../logs/crashdebug.log", "a+");
         if (_fpLog)
         {
             fprintf(_fpLog, 
@@ -92,6 +93,7 @@ void handle_exception (ecode_t code, ecode_t fatal, ecode_t mswec, ecode_t line)
             fclose(_fpLog);
         }
         fprintf(stderr, "\x1B[91m[FATAL 0x%X]\x1B[0m Aborting due to previous error.\n", code);
+#endif
         kill();
     }
     else
@@ -110,6 +112,7 @@ void clear_exception (EXCEPTION *pex)
 
 void dump_log (ecode_t code, ecode_t fatal, ecode_t mswec, ecode_t line)
 {
+#if !defined(XR_NO_CRASH_DUMP)
     time_t _t = time(NULL);
     struct tm _tm = *localtime(&_t);
     FILE* _fpLog = fopen("../logs/crashdebug.log", "a+");
@@ -125,6 +128,7 @@ void dump_log (ecode_t code, ecode_t fatal, ecode_t mswec, ecode_t line)
         fclose(_fpLog);
     }
     fprintf(stderr, "\n\x1B[33m[ERR 0x%X]\x1B[0m %s\n", code, exception_message(code));
+#endif
 }
 
 void warn (char *warning, int warntype)

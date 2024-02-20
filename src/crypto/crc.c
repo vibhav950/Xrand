@@ -23,7 +23,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "crypto/crc.h"
+#include "crc.h"
 #include "common/defs.h"
 
 /* The CRC32 lookup table */
