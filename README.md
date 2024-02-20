@@ -13,16 +13,40 @@ C library for cryptographically secure random number generation.
 
 ## Compatibility State
 
-Currently only compatible with `Win32` systems.
+As of `v1.0.1-alpha`, Xrand is only compatible with `Win32` systems.
 
-## How to Use
+## System Requirements
 
-Clone the repo to your local machine and simply run `make` to check for compilation dependencies.
+This library requires OpenSSL 3.0 for cryptographic functionality. To build OpenSSL on Windows, see the [Notes for Windows platforms](https://github.com/openssl/openssl/blob/master/NOTES-WINDOWS.md) on the [offical OpenSSL Git Repository](https://github.com/openssl/openssl/).
 
-## How to Contribute
+For MinGW, you can use the MSYS2 environment to build native OpenSSL through cross-compilation. Install MSYS2 from [here](https://www.msys2.org/) and and run the following commands in the shell to build OpenSSL
 
-To add relevant features or security fixes to the repo, add your contributions to a fork and I will review your pull request as soon as possible. Please do not submit a feature unrelated to random number generation and its applications.
+```bash
+pacman -Syu
+pacman -S mingw-w64-x86_64-openssl
+```
 
-## Future Prospects and Upcoming Features
+## Usage
 
-Future versions will add/extend support for common security protocols like SSH, SSL, TLS, etc., and application-specific features like the generation of PKCS keys, prime numbers, and cryptographic tokens.
+You can obtain a local copy of the Git repository to compile the source code and run tests
+
+```powershell
+git clone https://github.com/vibhav950/Xrand.git
+cd Xrand
+make
+```
+
+## Development
+
+If you wish to contribute to Xrand either to fix bugs or contribute new features, you will have to fork this GitHub repository `vibhav950/Xrand` and clone your public fork
+
+```powershell
+git clone https://github.com/yourname/Xrand.git
+```
+
+This is necessary since all development for this project will be done only via GitHub pull requests. For more details about the contribution policies, see [Contributing](https://github.com/vibhav950/Xrand/blob/main/CONTRIBUTING.md).
+
+## Todo
+
+* [ ] Generation of probable primes based on the Miller-Rabin primality test using the method described under [FIPS 186-5](https://csrc.nist.gov/pubs/fips/186-5/final).
+* [ ] Modes of operation for providing key-streams of different strength levels (or randomness "quality") so that the client application can directly instantiate the generator with a preset security strength.
