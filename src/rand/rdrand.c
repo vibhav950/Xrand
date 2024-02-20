@@ -25,72 +25,98 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _WIN32
-#error "This file is Windows specific"
-#endif
-
+#include "common/defs.h"
 #include "rdrand.h"
 #include <string.h>
-#include <intrin.h>
+
+#if defined(__x86_64__) || defined(_M_X64) || defined(_M_IX86) || defined(__i386)
+    #if defined(_MSC_VER)
+        // Visual Studio
+        #include <intrin.h> // __cpuid, __cpuidex
+    #elif defined(__GNUC__)
+        // GCC / LLVM (Clang)
+        #include <cpuid.h> // __get_cpuid, __get_cpuid_count
+    #endif
+#endif
 
 int check_is_intel(void)
 {
-    unsigned int __eax = 0;
-    unsigned int __ebx = 0;
-    unsigned int __ecx = 0;
-    unsigned int __edx = 0;
+#if defined(__x86_64__) || defined(_M_X64) || defined(_M_IX86) || defined(__i386)
+#if defined(_MSC_VER) // Visual Studio
+    int cpuid[4] = {-1};
+    __cpuid(cpuid, 0);
+#else // GCC / LLVM (Clang)
+    unsigned int cpuid[4] = {0};
+    __get_cpuid(0, &cpuid[0], &cpuid[1], &cpuid[2], &cpuid[3]);
+#endif
 
-    __get_cpuid(0, &__eax, &__ebx, &__ecx, &__edx);
-
-    if (memcmp((char *)&__ebx, "Genu", 4) == 0 &&
-        memcmp((char *)&__edx, "ineI", 4) == 0 &&
-        memcmp((char *)&__ecx, "ntel", 4) == 0)
+    if (memcmp((char *)&cpuid[1], "Genu", 4) == 0 &&
+        memcmp((char *)&cpuid[3], "ineI", 4) == 0 &&
+        memcmp((char *)&cpuid[2], "ntel", 4) == 0)
         return 1;
     return 0;
+#else // unknown compiler architecture
+    return 0;
+#endif
 }
 
 int check_is_amd(void)
 {
-    unsigned int __eax = 0;
-    unsigned int __ebx = 0;
-    unsigned int __ecx = 0;
-    unsigned int __edx = 0;
+#if defined(__x86_64__) || defined(_M_X64) || defined(_M_IX86) || defined(__i386)
+#if defined(_MSC_VER) // Visual Studio
+    int cpuid[4] = {-1};
+    __cpuid(cpuid, 0);
+#else // GCC / LLVM (Clang)
+    unsigned int cpuid[4] = {0};
+    __get_cpuid(0, &cpuid[0], &cpuid[1], &cpuid[2], &cpuid[3]);
+#endif
 
-    __get_cpuid(0, &__eax, &__ebx, &__ecx, &__edx);
-
-    if (memcmp((char *)&__ebx, "Auth", 4) == 0 &&
-        memcmp((char *)&__edx, "enti", 4) == 0 &&
-        memcmp((char *)&__ecx, "cAMD", 4) == 0)
+    if (memcmp((char *)&cpuid[1], "Auth", 4) == 0 &&
+        memcmp((char *)&cpuid[3], "enti", 4) == 0 &&
+        memcmp((char *)&cpuid[2], "cAMD", 4) == 0)
         return 1;
     return 0;
+#else // unknown compiler architecture
+    return 0;
+#endif
 }
 
 int check_rdrand(void)
 {
-    unsigned int __eax = 0;
-    unsigned int __ebx = 0;
-    unsigned int __ecx = 0;
-    unsigned int __edx = 0;
+#if defined(__x86_64__) || defined(_M_X64) || defined(_M_IX86) || defined(__i386)
+#if defined(_MSC_VER) // Visual Studio
+    int cpuid[4] = {-1};
+    __cpuid(cpuid, 1);
+#else // GCC / LLVM (Clang)
+    unsigned int cpuid[4] = {0};
+    __get_cpuid(1, &cpuid[0], &cpuid[1], &cpuid[2], &cpuid[3]);
+#endif
 
-    __get_cpuid(1, &__eax, &__ebx, &__ecx, &__edx);
-
-    if ((__ecx & 0x40000000) == 0x40000000)
+    if ((cpuid[2] & 0x40000000) == 0x40000000) // rdrand bit (1 << 30)
         return 1;
     return 0;
+#else // unknown compiler architecture
+    return 0;
+#endif
 }
 
 int check_rdseed(void)
 {
-    unsigned int __eax = 0;
-    unsigned int __ebx = 0;
-    unsigned int __ecx = 0;
-    unsigned int __edx = 0;
+#if defined(__x86_64__) || defined(_M_X64) || defined(_M_IX86) || defined(__i386)
+#if defined(_MSC_VER) // Visual Studio
+    int cpuid[4] = {-1};
+    __cpuidex(cpuid, 7, 0);
+#else // GCC / LLVM (Clang)
+    unsigned int cpuid[4] = {0};
+    __get_cpuid_count(7, 0, &cpuid[0], &cpuid[1], &cpuid[2], &cpuid[3]);
+#endif
 
-    __get_cpuid_count(7, 0, &__eax, &__ebx, &__ecx, &__edx);
-
-    if ((__ebx & 0x00040000) == 0x00040000)
+    if ((cpuid[1] & 0x00040000) == 0x00040000) // rdseed bit (1 << 18)
         return 1;
     return 0;
+#else // unknown compiler architecture
+    return 0;
+#endif
 }
 
 /* Returns 1 if RDRAND is available, 0 otherwise */

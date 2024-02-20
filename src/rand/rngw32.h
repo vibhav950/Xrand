@@ -25,14 +25,17 @@ extern "C" {
 #include <windows.h>
 #include "common/defs.h"
 
-// OpenSSL is required for cryptographic utilities
+/* OpenSSL is required for cryptographic utilities */
 #if __has_include(<openssl/sha.h>)
 #include <openssl/sha.h>
 #else
 #error "OpenSSL not found"
 #endif
 
-// RNG basic macros
+/* Set this to true to enable debug mode */
+#define RNG_MODE_DEBUG 1
+
+/* RNG basic macros */
 #define RNG_POOL_SIZE 384
 
 #if RNG_POOL_SIZE % SHA512_DIGEST_LENGTH
@@ -43,7 +46,7 @@ extern "C" {
 
 #define RNG_POOL_CHUNKS (RNG_POOL_SIZE / RNG_POOL_CHUNK_SIZE)
 
-// Interval in milliseconds between successive fast polls
+/* Interval in milliseconds between successive fast polls */
 #define RNG_FAST_POLL_INTERVAL 500
 
 /**

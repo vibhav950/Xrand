@@ -85,8 +85,8 @@ status_t ctr_drbg_update (CTR_DRBG_STATE *state,
     for (size_t i = 0; i < data_len; i++)
         temp[i] ^= provided_data[i];
 
-    memcpy(state->K.k, temp, 32);
-    memcpy(state->V.bytes, temp + 32, 16);
+    memcpy(state->K.k, temp, AES256_KEY_SIZE);
+    memcpy(state->V.bytes, temp + AES256_KEY_SIZE, AES_BLOCK_SIZE);
 
     return SUCCESS;
 }
@@ -154,12 +154,17 @@ status_t ctr_drbg_generate (CTR_DRBG_STATE *state,
     aes256_expand_key(&state->K, &ks);
 
     /* Generate the requested number of blocks */
-    while (rem_out > 0) {
+    for (;;) {
         _ctr_drbg_incr32(state, 1); /* Increment counter */
         
         aes256_encr_block(state->V.bytes, temp, &ks);
 
-        memcpy(out + i, temp, (rem_out < AES_BLOCK_SIZE ? rem_out : AES_BLOCK_SIZE));
+        if (rem_out < AES_BLOCK_SIZE) {
+            memcpy(out + i, temp, rem_out);
+            break;
+        }
+
+        memcpy(out + i, temp, AES_BLOCK_SIZE);
 
         rem_out -= AES_BLOCK_SIZE;
         i += AES_BLOCK_SIZE;
