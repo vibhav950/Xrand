@@ -28,11 +28,8 @@
 #ifndef EXCEPTIONS_H
 #define EXCEPTIONS_H
 
-#if __has_builtin(__builtin_trap)
-#define kill __builtin_trap
-#else
-#define kill(_) { *(char *)0 = 0; }
-#endif
+/* Immediate process termination for unrecoverable corruptions */
+extern void kill(void);
 
 /* ERROR codes */
 #define ERR_SUCCESS                     0x00
@@ -40,7 +37,7 @@
 #define ERR_NO_MEMORY                   0x02
 #define ERR_RAND_INIT                   0x03
 #define ERR_REQUEST_TOO_LARGE           0x06
-#define ERR_DIGEST_LEN_MISMATCH         0x07
+#define ERR_INVALID_POOL_SIZE           0x07
 #define ERR_CANNOT_ACCESS_DISK          0x09
 #define ERR_JENT_FAILURE                0x0A
 
@@ -60,7 +57,7 @@
  * print a custom warning message to stderr. 
 */
 #define WARN_DEPRECATED            0xF0
-#define WARN_INVALID_PARAM         0xF1
+#define WARN_INVALID_ARGS          0xF1
 #define WARN_UNSAFE                0xF2  
 
 typedef int ecode_t;
@@ -85,7 +82,7 @@ extern void set_exception(ecode_t, ecode_t, ecode_t, ecode_t);
 extern void handle_exception(ecode_t, ecode_t, ecode_t, ecode_t);
 extern void clear_exception(EXCEPTION*);
 extern void dump_log(ecode_t, ecode_t, ecode_t, ecode_t);
-extern void warn (char*, int);
+extern void warn (char*, int, int);
 
 #define TRY if (setjmp(ex_buf) == 0)
 
@@ -104,7 +101,7 @@ extern void warn (char*, int);
 #define Log(code, fatal, mswec, line)\
     dump_log(code, fatal, mswec, line)
 
-#define Warn(warning, warntype)\
-    warn(warning, warntype)
+#define Warn(warning, warntype, verbose)\
+    warn(warning, warntype, verbose)
 
 #endif /* EXCEPTIONS_H */

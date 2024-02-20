@@ -23,7 +23,6 @@
 
 #include <stdlib.h>
 #include <process.h>
-#include <cpuid.h>
 #include <wchar.h>
 #include <tchar.h>
 #include <strsafe.h>
@@ -85,15 +84,14 @@ typedef struct _BUF_ST {
 } BUF, *PBUF;
 
 /* Add a single byte to the pool */
-#define AddByte(x) {\
-    if (nCurrentPoolWritePos % RNG_POOL_MIX_INTERVAL == 0) {\
-        RandPoolMix();\
-    }\
-    if (nCurrentPoolWritePos == RNG_POOL_SIZE) {\
-        nCurrentPoolWritePos = 0;\
-    }\
-    pRandPool[nCurrentPoolWritePos++] ^= (uint8_t) x;\
-    }
+#define AddByte(x)\
+    do {\
+        if (nCurrentPoolWritePos % RNG_POOL_MIX_INTERVAL == 0)\
+            RandPoolMix();\
+        if (nCurrentPoolWritePos == RNG_POOL_SIZE)\
+            nCurrentPoolWritePos = 0;\
+        pRandPool[nCurrentPoolWritePos++] ^= (uint8_t) x;\
+    } while(0)
 
 /* Add a pointer to the pool */
 #ifdef _WIN64
@@ -229,13 +227,7 @@ BOOL RandPoolInit(void)
         /* Use BCRYPT_RNG_ALGORITHM as the underlying random number
            generation algorithm  for BCryptGenRandom() which is the
            AES-256 counter mode based random  generator  as defined
-           in SP800-90.
-
-           Note: If it is available,  do not use BCRYPT_RNG_ALGORITHM
-           as the RNG algorithm for BCryptGenRandom() due to security
-           concerns regarding  the existence of  a potential backdoor
-           to the SP800-90 non-compliant DUAL_EC_DRBG. This algorithm
-           was removed from the CNG beginning from Windows 10. */
+           in SP800-90. */
         if (BCryptOpenAlgorithmProvider(
                 &hBCryptProv,
                 BCRYPT_RNG_ALGORITHM,
@@ -401,13 +393,13 @@ BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam)
     Add32(dwProcessId); /* The window thread ID */
 
     GetGUIThreadInfo(dwThreadId, (PGUITHREADINFO)&gui);
-    AddBuf((uint8_t *)&gui, sizeof(GUITHREADINFO)); /* GUI info of the thread */
+    AddBuf(Ptr8(&gui), sizeof(GUITHREADINFO)); /* GUI info of the thread */
 
     /* Get all sorts of  window information,  including the window
        client area coordinates, bounding rectangle dimensions, and
        the extended window style. */
     GetWindowInfo(hWnd, (PWINDOWINFO)&wi);
-    AddBuf((uint8_t *)&wi, sizeof(WINDOWINFO)); /* Wido*/
+    AddBuf(Ptr8(&wi), sizeof(WINDOWINFO));
 
     return TRUE;
 }
@@ -446,11 +438,11 @@ LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 
         /* CRC of the mouse event */
         for (int i = 0; i < sizeof(MSLLHOOKSTRUCT); ++i)
-            crc = UPDC32((Ptr8(lpMouse))[i], crc);
+            crc = UPDC32((Ptr8(&lpMouse))[i], crc);
 
         /* CRC of the time delta */
         for (int i = 0; i < 4; ++i)
-            timeCrc = UPDC32((Ptr8(dwTimeDelta))[i], timeCrc);
+            timeCrc = UPDC32((Ptr8(&dwTimeDelta))[i], timeCrc);
 
         EnterCriticalSection(&randCritSec);
         Add32((uint32_t)(crc + timeCrc));
@@ -498,11 +490,11 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 
         /* CRC of the keyboard event */
         for (int i = 0; i < sizeof(KBDLLHOOKSTRUCT); ++i)
-            crc = UPDC32((Ptr8(lpKbd))[i], crc);
+            crc = UPDC32((Ptr8(&lpKbd))[i], crc);
 
         /* CRC of the time delta */
         for (int i = 0; i < 4; ++i)
-            timeCrc = UPDC32((Ptr8(dwTimeDelta))[i], timeCrc);
+            timeCrc = UPDC32((Ptr8(&dwTimeDelta))[i], timeCrc);
 
         EnterCriticalSection(&randCritSec);
         Add32((uint32_t)(crc + timeCrc));
@@ -677,32 +669,32 @@ BOOL RandFastPoll(void)
 
     /* Multiword sytem information */
     GetCaretPos(&point); /* Current caret position */
-    AddBuf(Ptr8(point), sizeof(POINT));
+    AddBuf(Ptr8(&point), sizeof(POINT));
     GetCursorPos(&point); /* Current mouse cursor position */
-    AddBuf(Ptr8(point), sizeof(POINT));
+    AddBuf(Ptr8(&point), sizeof(POINT));
 
     /* Get percent of memory in use, bytes of physical memory, bytes of
        free physical memory, bytes in paging file, free bytes in paging
        file, user bytes of address space, and free user bytes. */
     memoryStatus.dwLength = sizeof(MEMORYSTATUS);
     GlobalMemoryStatus(&memoryStatus);
-    AddBuf(Ptr8(memoryStatus), sizeof(MEMORYSTATUS));
+    AddBuf(Ptr8(&memoryStatus), sizeof(MEMORYSTATUS));
 
     /* Get thread and process creation time, exit time, time in kernel
        mode, and time in user mode in 100ns intervals. */
     handle = GetCurrentThread();
     GetThreadTimes(handle, &creationTime, &exitTime, &kernelTime, &userTime);
-    AddBuf(Ptr8(creationTime), sizeof(FILETIME));
-    AddBuf(Ptr8(exitTime), sizeof(FILETIME));
-    AddBuf(Ptr8(kernelTime), sizeof(FILETIME));
-    AddBuf(Ptr8(userTime), sizeof(FILETIME));
+    AddBuf(Ptr8(&creationTime), sizeof(FILETIME));
+    AddBuf(Ptr8(&exitTime), sizeof(FILETIME));
+    AddBuf(Ptr8(&kernelTime), sizeof(FILETIME));
+    AddBuf(Ptr8(&userTime), sizeof(FILETIME));
 
     handle = GetCurrentProcess();
     GetProcessTimes(handle, &creationTime, &exitTime, &kernelTime, &userTime);
-    AddBuf(Ptr8(creationTime), sizeof(FILETIME));
-    AddBuf(Ptr8(exitTime), sizeof(FILETIME));
-    AddBuf(Ptr8(kernelTime), sizeof(FILETIME));
-    AddBuf(Ptr8(userTime), sizeof(FILETIME));
+    AddBuf(Ptr8(&creationTime), sizeof(FILETIME));
+    AddBuf(Ptr8(&exitTime), sizeof(FILETIME));
+    AddBuf(Ptr8(&kernelTime), sizeof(FILETIME));
+    AddBuf(Ptr8(&userTime), sizeof(FILETIME));
 
     /* Get the minimum and maximum working set size for the
        current process. */
@@ -714,7 +706,7 @@ BOOL RandFastPoll(void)
        highest possible level of precision (<1us) in
        the Coordinated Universal Time  (UTC) format. */
     GetSystemTimePreciseAsFileTime((LPFILETIME)&systemTimeAsFileTime);
-    AddBuf(Ptr8(systemTimeAsFileTime), sizeof(LPFILETIME));
+    AddBuf(Ptr8(&systemTimeAsFileTime), sizeof(LPFILETIME));
 
     /* According  to  MS docs,  the  majority   of  Windows   systems
        (Windows 7,  Windows Server 2008 R2,  Windows 8,  Windows 8.1,
@@ -736,7 +728,7 @@ BOOL RandFastPoll(void)
        always return with success. */
     if (QueryPerformanceCounter(&ticks))
     {
-        AddBuf(Ptr8(ticks), sizeof(LARGE_INTEGER));
+        AddBuf(Ptr8(&ticks), sizeof(LARGE_INTEGER));
     }
 
 #if defined(__x86_64__)
@@ -867,7 +859,7 @@ BOOL RandSlowPoll(void)
         STARTUPINFO startupInfo;
         startupInfo.cb = sizeof(STARTUPINFO);
         GetStartupInfo(&startupInfo);
-        AddBuf((uint8_t *)&startupInfo, sizeof(STARTUPINFO));
+        AddBuf(Ptr8(&startupInfo), sizeof(STARTUPINFO));
         bAddedStartupInfo = TRUE;
     }
 
@@ -938,7 +930,7 @@ BOOL RandSlowPoll(void)
                                 NULL, 0,
                                 &diskPerformance, sizeof(diskPerformance),
                                 &dwSize, NULL))
-                AddBuf(Ptr8(diskPerformance), sizeof(DISK_PERFORMANCE));
+                AddBuf(Ptr8(&diskPerformance), sizeof(DISK_PERFORMANCE));
 
             CloseHandle(hDevice);
         }
@@ -1015,7 +1007,7 @@ BOOL RandSlowPoll(void)
             /* Recieve the system information into the allocated buffer */
             status = pNtQuerySystemInformation(dwType[i], buf, ulSize, NULL);
             if (status == ERROR_SUCCESS)
-                AddBuf((uint8_t *)buf, ulSize);
+                AddBuf(Ptr8(buf), ulSize);
             else
             {
                 free(buf);
@@ -1057,9 +1049,9 @@ BOOL RandSlowPoll(void)
         MIB_TCPSTATS tcpStats;
         MIB_IPSTATS ipStats;
         if (pGetTcpStatisticsEx(&tcpStats, AF_INET) == NO_ERROR)
-            AddBuf((uint8_t *)&tcpStats, sizeof(MIB_TCPSTATS));
+            AddBuf(Ptr8(&tcpStats), sizeof(MIB_TCPSTATS));
         if (pGetIpStatisticsEx(&ipStats, AF_INET) == NO_ERROR)
-            AddBuf((uint8_t *)&ipStats, sizeof(MIB_IPSTATS));
+            AddBuf(Ptr8(&ipStats), sizeof(MIB_IPSTATS));
     }
 
     /* Find out whether this is an NT server or workstation if necessary */
@@ -1131,7 +1123,7 @@ BOOL RandSlowPoll(void)
                               0, 0, &lpBuffer) == 0)
         {
             pNetApiBufferSize(lpBuffer, &dwSize);
-            AddBuf((uint8_t *)lpBuffer, dwSize);
+            AddBuf(Ptr8(lpBuffer), dwSize);
             pNetApiBufferFree(lpBuffer);
         }
     }
@@ -1150,7 +1142,7 @@ BOOL RandSlowPoll(void)
                 if (pGpuZData->version == 1)
                 {
                     EnterCriticalSection(&randCritSec);
-                    AddBuf((uint8_t *)&pGpuZData, sizeof(GPUZ_SH_MEM));
+                    AddBuf(Ptr8(pGpuZData), sizeof(GPUZ_SH_MEM));
                     LeaveCriticalSection(&randCritSec);
                 }
                 UnmapViewOfFile(pGpuZData);
@@ -1171,7 +1163,7 @@ BOOL RandSlowPoll(void)
                      MapViewOfFile(hCoreTempData, FILE_MAP_READ, 0, 0, 0)) != NULL)
             {
                 EnterCriticalSection(&randCritSec);
-                AddBuf((uint8_t *)&pCoreTempData, sizeof(CORE_TEMP_SHARED_DATA));
+                AddBuf(Ptr8(pCoreTempData), sizeof(CORE_TEMP_SHARED_DATA));
                 LeaveCriticalSection(&randCritSec);
 
                 UnmapViewOfFile(pCoreTempData);
@@ -1190,11 +1182,9 @@ BOOL RandSlowPoll(void)
 }
 
 /**
- * The pool mixing function.  The digest of the entire pool is computed
- * using a cryptographic one-way hash function and the resulting digest
- * is added back to the pool using modulo 2^8 addition while preserving
- * its previous contents.
- *
+ * Schematic for the pool mixing function
+ * (for more info see https://vibhav950.github.io/Xrand).
+ * 
  *               ┌────────────────────────────────────────┐
  *            XOR│                                        │
  * ┌────────┬────▼───┬────────────────────────────────┐   │
@@ -1206,6 +1196,13 @@ BOOL RandSlowPoll(void)
  *                           └────────────────────────────┘
  *                     Successive hashes
  *                     ────────────────►
+*/
+
+/**
+ * The pool mixing function.  The digest of the entire pool is computed
+ * using a cryptographic one-way hash function and the resulting digest
+ * is added back to the pool using modulo 2^8 addition while preserving
+ * its previous contents.
  *
  * Note: RNG_POOL_SIZE must be divisible by SHA512_DIGEST_LENGTH.
  */
@@ -1213,7 +1210,7 @@ void RandPoolMix(void)
 {
     if (RNG_POOL_SIZE % SHA512_DIGEST_LENGTH)
     {
-        Throw(ERR_DIGEST_LEN_MISMATCH, FATAL, -1, __LINE__);
+        Throw(ERR_INVALID_POOL_SIZE, FATAL, -1, __LINE__);
     }
 
     uint8_t buf[SHA512_DIGEST_LENGTH];
@@ -1240,9 +1237,17 @@ void RandPoolMix(void)
  */
 BOOL RandFetchBytes(uint8_t *data, size_t len, int forceSlowPoll)
 {
+    BOOL ret = FALSE;
+
+    if (data == NULL)
+    {
+        Warn("Invalid data pointer (expected a non-NULL value)", WARN_INVALID_ARGS, RNG_MODE_DEBUG);
+        return FALSE;
+    }
+
     if (len < 0)
     {
-        Warn("Invalid request length (expected a positive value)", WARN_INVALID_PARAM);
+        Warn("Invalid request length (expected a positive value)", WARN_INVALID_ARGS, RNG_MODE_DEBUG);
         return FALSE;
     }
 
@@ -1254,6 +1259,8 @@ BOOL RandFetchBytes(uint8_t *data, size_t len, int forceSlowPoll)
         return FALSE;
     }
 
+    /* This is a fatal error (triggers an immediate process termination)
+       for now, but might be changed in future versions to a FALSE return */
     if (!bDidRandPoolInit)
         Throw(ERR_RAND_INIT, FATAL, GetLastError(), __LINE__);
 
@@ -1262,17 +1269,17 @@ BOOL RandFetchBytes(uint8_t *data, size_t len, int forceSlowPoll)
     if (!bDidSlowPoll || forceSlowPoll)
     {
         if (!RandSlowPoll())
-            return FALSE;
+            goto cleanup;
         else
             bDidSlowPoll = TRUE;
     }
 
     if (bUserEventsEnabled && !AddUserEvents())
-        return FALSE;
+        goto cleanup;
 
     /* Mix the pool */
     if (!RandFastPoll())
-        return FALSE;
+        goto cleanup;
 
     /* Add the current pool contents to the output buffer */
     for (int i = 0; i < len; ++i)
@@ -1287,12 +1294,12 @@ BOOL RandFetchBytes(uint8_t *data, size_t len, int forceSlowPoll)
     /* Invert the pool */
     for (int i = 0; i < RNG_POOL_SIZE / sizeof(uint32_t); ++i)
     {
-        ((uint32_t *)pRandPool)[i] = ((uint32_t *)pRandPool)[i] ^ 0xffffffff;
+        Ptr32(pRandPool)[i] = Ptr32(pRandPool)[i] ^ 0xffffffff;
     }
 
     /* Mix the pool */
     if (!RandFastPoll())
-        return FALSE;
+        goto cleanup;
 
     /* Add the new pool contents to the output buffer */
     for (int i = 0; i < len; ++i)
@@ -1307,9 +1314,13 @@ BOOL RandFetchBytes(uint8_t *data, size_t len, int forceSlowPoll)
     /* Mix the pool */
     RandPoolMix();
 
+    ret = TRUE;
+
+cleanup:
+
     LeaveCriticalSection(&randCritSec);
 
-    return TRUE;
+    return ret;
 }
 
 /**
@@ -1353,11 +1364,5 @@ void RngMix(void)
  */
 bool RngFetchBytes(uint8_t *data, size_t len, int forceSlowPoll)
 {
-    return RandFetchBytes(data, len, forceSlowPoll);
-}
-
-int main()
-{
-    // temp
-    return 0;
+    return RandFetchBytes(data, len, true);
 }
