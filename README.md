@@ -13,17 +13,20 @@ C library for cryptographically secure random number generation.
 
 ## Compatibility State
 
-Currently only compatible with `Win32` systems.
+As of `v1.0.1-alpha`, Xrand is only compatible with `Win32` systems.
 
-## How to Use
+## System Requirements
 
 This library requires OpenSSL 3.0 for cryptographic functionality. To build OpenSSL on Windows, see the [Notes for Windows platforms](https://github.com/openssl/openssl/blob/master/NOTES-WINDOWS.md) on the [official OpenSSL Git Repository](https://github.com/openssl/openssl/).
 
 For MinGW, you can use the MSYS2 environment to build native OpenSSL through cross-compilation. Install MSYS2 from [here](https://www.msys2.org/) and run the following commands in the shell to build OpenSSL
 
-To add relevant features or security fixes to the repo, add your contributions to a fork and I will review your pull request as soon as possible. Please do not submit a feature unrelated to random number generation and its applications.
+```bash
+pacman -Syu
+pacman -S mingw-w64-x86_64-openssl
+```
 
-## Future Prospects and Upcoming Features
+## Usage
 
 You can obtain a local copy of the Git repository to compile the source code and run tests
 
