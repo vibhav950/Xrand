@@ -32,8 +32,8 @@
 #define CTR_DRBG_H
 
 #include <string.h>
-#include "defs.h"
-#include "aes.h"
+#include "common/defs.h"
+#include "crypto/aes.h"
 
 /* AES_BLOCK_SIZE as 4-byte words */
 #define AES_BLOCK_WORDS       (AES_BLOCK_SIZE / 4)
