@@ -78,7 +78,7 @@ status_t ctr_drbg_init(CTR_DRBG_STATE *state,
 
 
 /** @brief  Update the internal state of the CTR_DRBG
- *          using the provided_data performing block
+ *          using the provided_data by performing block
  *          operations from the underlying block cipher.
  * 
  *  @param state                        The CTR_DRBG context to update.
@@ -117,7 +117,8 @@ status_t ctr_drbg_reseed(CTR_DRBG_STATE *state,
  *  @note   Backtracking resistance is enabled by default.
  * 
  *  @param state                        The CTR_DRBG context.
- *  @param entropy                      The entropy from the noise source.
+ *  @param out                          The output buffer containing.
+ *  @param out_len                      The output length in bytes.
  *  @param additional_input             Additional data from the consuming
  *                                      application. Can be NULL.
  *  @param additional_input_len         The length of @p additional_input
