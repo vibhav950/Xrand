@@ -36,6 +36,33 @@ cd Xrand
 make
 ```
 
+To get random data in your application
+
+```c
+#include "rand/rngw32.h"
+#include "common/defs.h"
+
+int main(void)
+{
+    /* Initialize the entropy pool */
+    ASSERT(RngStart() == true);
+
+    /* Buffer to hold the random data */
+    byte rand_bytes[64];
+
+    /* Fetch bytes from the entropy pool */
+    ASSERT(RngFetchBytes(rand_bytes, 64) == true);
+
+    /* Process the bytes */
+    /* ... */
+
+    /* Stop the RNG */
+    RngStop();
+
+    return 0;
+}
+```
+
 ## Development
 
 If you wish to contribute to Xrand either to fix bugs or contribute new features, you will have to fork this GitHub repository `vibhav950/Xrand` and clone your public fork
