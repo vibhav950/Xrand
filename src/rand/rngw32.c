@@ -1350,16 +1350,10 @@ void RngMix(void)
  *
  * Returns 1 if the request was successful, 0 otherwise.
  */
-bool RngFetchBytes(uint8_t *data, size_t len, int forceSlowPoll)
+bool RngFetchBytes(uint8_t *data, size_t len)
 {
     if (!data)
         return false;
 
-    return RandFetchBytes(data, len, forceSlowPoll);
-}
-
-int main()
-{
-    // temp
-    return 0;
+    return RandFetchBytes(data, len, true);
 }

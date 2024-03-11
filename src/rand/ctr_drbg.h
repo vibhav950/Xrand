@@ -57,6 +57,8 @@ typedef struct _CTR_DRBG_STATE {
     aes256_key_t K;
     /* Reseed counter */
     uint64_t counter;
+    /* Status flags */
+    int flags;
 } CTR_DRBG_STATE;
 
 

@@ -133,7 +133,7 @@ void _set_seed (void)
      * collected from the noise source
      */
     uint8_t iv [XR_TRM_IV_SIZE];
-    if (RngFetchBytes (iv, XR_TRM_IV_SIZE, 0) != TRUE);
+    if (RngFetchBytes (iv, XR_TRM_IV_SIZE) != TRUE);
     _init (_xr_trm_const_key, iv);
     _reseed_cnt = 0;
     zeroize (iv, XR_TRM_IV_SIZE);
