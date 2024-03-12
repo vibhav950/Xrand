@@ -17,9 +17,9 @@ As of `v1.0.1-alpha`, Xrand is only compatible with `Win32` systems.
 
 ## System Requirements
 
-This library requires OpenSSL 3.0 for cryptographic functionality. To build OpenSSL on Windows, see the [Notes for Windows platforms](https://github.com/openssl/openssl/blob/master/NOTES-WINDOWS.md) on the [offical OpenSSL Git Repository](https://github.com/openssl/openssl/).
+This library requires OpenSSL 3.0 for cryptographic functionality. To build OpenSSL on Windows, see the [Notes for Windows platforms](https://github.com/openssl/openssl/blob/master/NOTES-WINDOWS.md) on the [official OpenSSL Git Repository](https://github.com/openssl/openssl/).
 
-For MinGW, you can use the MSYS2 environment to build native OpenSSL through cross-compilation. Install MSYS2 from [here](https://www.msys2.org/) and and run the following commands in the shell to build OpenSSL
+For MinGW, you can use the MSYS2 environment to build native OpenSSL through cross-compilation. Install MSYS2 from [here](https://www.msys2.org/) and run the following commands in the shell to build OpenSSL
 
 ```bash
 pacman -Syu
@@ -75,5 +75,5 @@ This is necessary since all development for this project will be done only via G
 
 ## Todo
 
-* [ ] Generation of probable primes based on the Miller-Rabin primality test using the method described under [FIPS 186-5](https://csrc.nist.gov/pubs/fips/186-5/final).
-* [ ] Modes of operation for providing key-streams of different strength levels (or randomness "quality") so that the client application can directly instantiate the generator with a preset security strength.
+* [ ] Generation of probable primes based on the Miller-Rabin primality test as defined in the [FIPS 186-5](https://csrc.nist.gov/pubs/fips/186-5/final) standard.
+* [ ] Modes of operation for providing key streams of different strength levels (or randomness "quality") so that the client application can directly instantiate the generator with a preset security strength.
