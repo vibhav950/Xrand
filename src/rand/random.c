@@ -134,7 +134,6 @@ void normal(FILE *fp, double mu, double sigma, int iter)
         {
             next = &y;
         }
-
         else
         {
             fprintf(fp, "%lf\n", y);
@@ -181,10 +180,11 @@ void triangular(FILE *fp, double a, double b, double c, int iter)
 
     if (b - a)
     {
+        F = (c - a) / (b - a);
+
         for (int i = 0; i < iter; ++i)
         {
             U = _uni();
-            F = (c - a) / (b - a);
 
             if (U < F)
             {
@@ -238,12 +238,12 @@ void poisson(FILE *fp, double lambda, int iter)
         fp = stdout;
     }
 
-    double u, p, F;
+    double u, F;
+    double p = _exp(-lambda);
     int x;
 
     for (int i = 0; i < iter; ++i)
     {
-        p = _exp(-lambda);
         F = p;
         u = _uni();
         x = 0;
@@ -287,12 +287,12 @@ void binomial(FILE *fp, int n, double p, int iter)
         fp = stdout;
     }
 
-    double u, s, a, r;
+    double u, a, r;
+    double s = p / (1 - p);
     int x;
 
     for (int i = 0; i < iter; ++i)
     {
-        s = p / (1 - p);
         a = (n + 1) * s;
         r = _pow((1 - p), n);
         u = _uni();
