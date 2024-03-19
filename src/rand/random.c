@@ -275,7 +275,7 @@ void poisson(FILE *fp, double lambda, int iter)
  */
 void binomial(FILE *fp, int n, double p, int iter)
 {
-    if (n <= 0)
+    if (!(n > 0 && 0 <= p && p <= 1))
     {
         Warn("binomial : invalid arguments (expected n > 0, 0 <= p <= 1)",
              WARN_INVALID_PARAM);
@@ -287,25 +287,35 @@ void binomial(FILE *fp, int n, double p, int iter)
         fp = stdout;
     }
 
-    double u, a, r;
-    double s = p / (1 - p);
-    int x;
-
-    for (int i = 0; i < iter; ++i)
+    if (p == 1)
     {
-        a = (n + 1) * s;
-        r = _pow((1 - p), n);
-        u = _uni();
-        x = 0;
-
-        while (u > r)
+        for (int i = 0; i < iter; ++i)
         {
-            u = u - r;
-            x = x + 1;
-            r = ((a / x) - s) * r;
+            fprintf(fp, "%d\n", n);
         }
+    }
+    else
+    {
+        double u, a, r;
+        double s = p / (1 - p);
+        int x;
 
-        fprintf(fp, "%d\n", x);
+        for (int i = 0; i < iter; ++i)
+        {
+            a = (n + 1) * s;
+            r = _pow((1 - p), n);
+            u = _uni();
+            x = 0;
+
+            while (u > r)
+            {
+                u = u - r;
+                x = x + 1;
+                r = ((a / x) - s) * r;
+            }
+
+            fprintf(fp, "%d\n", x);
+        }
     }
 }
 
