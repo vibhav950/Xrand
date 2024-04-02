@@ -141,6 +141,8 @@ void bignum_sub_int(struct bn *a, struct bn *x, int n); /* x = a - n */
 int bignum_mod_int(uint32_t *r, struct bn *x, int n); /* r = a mod n */
 void bignum_exp_mod(struct bn *a, struct bn *k, struct bn *n, struct bn *x); /* x = a^k (mod n) */
 void bignum_gcd(struct bn *a, struct bn *b, struct bn *x); /* x = GCD(a, b) */
-
+void bignum_mul(struct bn *a, struct bn *b, struct bn *x); /* x = a * b */
+void _bignum_mul(struct bn *a, struct bn *b, struct bn *x); // debug
+void _bignum_mul_karatsuba(struct bn *a, struct bn *b, struct bn *x, int size); // debug
 
 #endif /* #ifndef __BIGNUM_H__ */

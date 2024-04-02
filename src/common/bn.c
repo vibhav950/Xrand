@@ -242,11 +242,11 @@ void bignum_sub(struct bn* a, struct bn* b, struct bn* c)
 }
 
 
-void bignum_mul(struct bn* a, struct bn* b, struct bn* c)
+void _bignum_mul(struct bn* a, struct bn* b, struct bn* c)
 {
-  require(a, "a is null");
-  require(b, "b is null");
-  require(c, "c is null");
+  // require(a, "a is null");
+  // require(b, "b is null");
+  // require(c, "c is null");
 
   struct bn row;
   struct bn tmp;
@@ -739,29 +739,10 @@ void bignum_sqr(struct bn *x)
 {
   require(x, "x is null");
 
-  struct bn row;
   struct bn tmp;
-  int i, j;
-  int words = bignum_words(bignum_msb(x));
-  bignum_init(&row);
-  bignum_init(&tmp);
-  for (i = 0; i < words; ++i)
-  {
-    for (j = 0; j < words; ++j)
-    {
-      if (i + j < BN_ARRAY_SIZE)
-      {
-        DTYPE_TMP intermediate = ((DTYPE_TMP)x->array[i] * (DTYPE_TMP)x->array[j]);
-        bignum_from_int(&tmp, intermediate);
-        _lshift_word(&tmp, i + j);
-        bignum_add(&tmp, &row, &row);
-      }
-    }
-  }
-  for (i = 0; i < BN_ARRAY_SIZE; ++i)
-  {
-    x->array[i] = row.array[i];
-  }
+  // use memcpy() instead of bignum_assign() for faster copying
+  memcpy(&tmp, x, sizeof(struct bn));
+  bignum_mul(&tmp, &tmp, x);
 }
 
 int bignum_mod_int(uint32_t *r, struct bn *a, int b)
@@ -800,7 +781,7 @@ int bignum_mod_int(uint32_t *r, struct bn *a, int b)
   return 0;
 }
 
-/* HAC 2.143 */
+/* x = a^k (mod n) [HAC 2.143] */
 void bignum_exp_mod(struct bn *a, struct bn *k, struct bn *n, struct bn *x)
 {
   require(a, "a is null");
@@ -880,42 +861,47 @@ void bignum_gcd(struct bn *a, struct bn *b, struct bn *x)
   bignum_mul(&tg, &tb, x);
 }
 
-// TODO fix this function
-void _bignum_karatsuba_mul_recursive(const struct bn *a, const struct bn *b, struct bn *x, int size, int rlevel)
+/* Recursive Karatsuba Multiplication - the bignum size threshold for which this 
+   function dominates the naive approach must be carefully set. */
+void _bignum_mul_karatsuba(struct bn *a, struct bn *b, struct bn *x, int size)
 {
-  int half = size / 2;
+  if (size <= 0)
+  {
+    return;
+  }
+
+  if (bignum_is_zero(a) || bignum_is_zero(b))
+  {
+    bignum_init(x);
+    return;
+  }
 
   if (size == 1)
   {
     DTYPE_TMP result = (DTYPE_TMP)(a->array[0]) * (DTYPE_TMP)(b->array[0]);
-    bignum_init(x);
-    x->array[0] = result;
+    bignum_from_int(x, result);
     return;
   }
 
+  int half = size / 2;
   struct bn a1, a0, b1, b0, c2, c1, c0, ct, cv;
 
-  /* Compute a1, a0, b1, b0 */
+  /* Split a into a1, a0, and b into b1, b0 */
   for (int i = 0; i < half; ++i)
   {
     a1.array[i] = a->array[i + half];
-    a1.array[i + half] = 0;
     a0.array[i] = a->array[i];
-    a0.array[i + half] = 0;
-
     b1.array[i] = b->array[i + half];
-    b1.array[i + half] = 0;
     b0.array[i] = b->array[i];
-    b0.array[i + half] = 0;
   }
 
   /* Compute subproducts */
-  _bignum_karatsuba_mul_recursive(&a1, &b1, &c2, half, rlevel + 1); /* c2 = a1 * b1 */
-  _bignum_karatsuba_mul_recursive(&a0, &b0, &c0, half, rlevel + 1); /* c0 = a0 * b0 */
+  _bignum_mul_karatsuba(&a1, &b1, &c2, half); /* c2 = a1 * b1 */
+  _bignum_mul_karatsuba(&a0, &b0, &c0, half); /* c0 = a0 * b0 */
   bignum_add(&a1, &a0, &ct);
   bignum_add(&b1, &b0, &cv);
   /* c1 = (a1 + a0) * (b1 + b0) - c2 - c0 */
-  _bignum_karatsuba_mul_recursive(&ct, &cv, &c1, half, rlevel + 1);
+  _bignum_mul_karatsuba(&ct, &cv, &c1, half);
   bignum_sub(&c1, &c2, &c1);
   bignum_sub(&c1, &c0, &c1);
 
@@ -926,11 +912,20 @@ void _bignum_karatsuba_mul_recursive(const struct bn *a, const struct bn *b, str
   bignum_add(x, &c0, x);
 }
 
-/* Karatsuba multiplication */
-void bignum_karatsuba_mul(struct bn *a, struct bn *b, struct bn *x)
+#define BN_KARATSUBA_THRESHOLD 64
+void bignum_mul(struct bn *a, struct bn *b, struct bn *x)
 {
   require(a, "a is null");
   require(b, "b is null");
   require(x, "x is null");
-  _bignum_karatsuba_mul_recursive(a, b, x, BN_ARRAY_SIZE, 0);
+
+  // int size = max(bignum_msb(a), bignum_msb(b));
+  // if (size < BN_KARATSUBA_THRESHOLD)
+  // {
+  //   _bignum_mul(a, b, x);
+  //   return;
+  // }
+  // _bignum_mul_karatsuba(a, b, x, BN_ARRAY_SIZE);
+
+  _bignum_mul(a, b, x);
 }

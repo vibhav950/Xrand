@@ -59,7 +59,8 @@ typedef unsigned __int64 u64;
 #endif
 
 #define count(_arr)     (sizeof(_arr) / sizeof((_arr)[0]))
-#define ceil_div(x, y) ((x) / (y) + ((x) % (y) ? 1 : 0))
+#define ceil_div(_x, _y) ((_x) / (_y) + ((_x) % (_y) ? 1 : 0))
+#define floor_div(_x, _y) ((_x) / (_y))
 
 typedef enum
 {
