@@ -131,14 +131,14 @@ extern int xr_mem_cmp(const void *a, const void *b, const size_t size);
 
 #pragma intrinsic(_rotl8, _rotl16, _rotr8, _rotr16)
 
-#define ROTL8(_x, _s) (_rotl8((_x), (_s)))
-#define ROTL16(_x, _s) (_rotl16((_x), (_s)))
-#define ROTL32(_x, _s) (_rotl((_x), (_s)))
-#define ROTL64(_x, _s) (_rotl64((_x), (_s)))
+#define ROTL8(_x, _s) _rotl8((_x), (_s))
+#define ROTL16(_x, _s) _rotl16((_x), (_s))
+#define ROTL32(_x, _s) _rotl((_x), (_s))
+#define ROTL64(_x, _s) _rotl64((_x), (_s))
 
-#define ROTR8(_x, _s) (_rotr8((_x), (_s)))
-#define ROTR16(_x, _s) (_rotr16((_x), (_s)))
-#define ROTR32(_x, _s) (_rotr((_x), (_s)))
-#define ROTR64(_x, _s) (_rotr64((_x), (_s)))
+#define ROTR8(_x, _s) _rotr8((_x), (_s))
+#define ROTR16(_x, _s) _rotr16((_x), (_s))
+#define ROTR32(_x, _s) _rotr((_x), (_s))
+#define ROTR64(_x, _s) _rotr64((_x), (_s))
 
 #endif /* DEFS_H */
