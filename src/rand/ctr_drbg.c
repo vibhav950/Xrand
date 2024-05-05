@@ -85,8 +85,8 @@ status_t ctr_drbg_update (CTR_DRBG_STATE *state,
     for (size_t i = 0; i < data_len; i++)
         temp[i] ^= provided_data[i];
 
-    memcpy(state->K.k, temp, 32);
-    memcpy(state->V.bytes, temp + 32, 16);
+    memcpy(state->K.k, temp, AES256_KEY_SIZE);
+    memcpy(state->V.bytes, temp + AES256_KEY_SIZE, AES_BLOCK_SIZE);
 
     return SUCCESS;
 }
