@@ -40,7 +40,7 @@
 #define ERR_NO_MEMORY                   0x02
 #define ERR_RAND_INIT                   0x03
 #define ERR_REQUEST_TOO_LARGE           0x06
-#define ERR_DIGEST_LEN_MISMATCH         0x07
+#define ERR_INVALID_POOL_SIZE           0x07
 #define ERR_CANNOT_ACCESS_DISK          0x09
 #define ERR_JENT_FAILURE                0x0A
 

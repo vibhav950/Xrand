@@ -1212,7 +1212,7 @@ void RandPoolMix(void)
 {
     if (RNG_POOL_SIZE % SHA512_DIGEST_LENGTH)
     {
-        Throw(ERR_DIGEST_LEN_MISMATCH, FATAL, -1, __LINE__);
+        Throw(ERR_INVALID_POOL_SIZE, FATAL, -1, __LINE__);
     }
 
     uint8_t buf[SHA512_DIGEST_LENGTH];

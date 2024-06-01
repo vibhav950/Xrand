@@ -34,17 +34,17 @@ const char *exception_message (ecode_t ecode)
     switch (ecode)
     {
         case ERR_SUCCESS:
-            return ("No error.");
+            return ("No errors detected.");
         case ERR_DEPRECATED:
             return ("This feature is deprecated.");
         case ERR_NO_MEMORY:
-            return ("Memory allocation failure.");
+            return ("Ran out of memory.");
         case ERR_RAND_INIT:
-            return ("Failed to init the RNG.");
+            return ("Failed to initialize the RNG.");
         case ERR_REQUEST_TOO_LARGE:
             return ("Request exceeded maximum allowed length.");
-        case ERR_DIGEST_LEN_MISMATCH:
-            return ("Block size does not align with digest length.");
+        case ERR_INVALID_POOL_SIZE:
+            return ("Pool size not a multiple of digest length.");
         case ERR_CANNOT_ACCESS_DISK:
             return ("The disk could not be accessed.");
         case ERR_JENT_FAILURE:
@@ -56,7 +56,7 @@ const char *exception_message (ecode_t ecode)
         case ERR_ENTROPY_TOO_LOW:
             return ("Insufficient system entropy");
         case ERR_INIT_CHECKS_FAILED:
-            return ("Did not pass init checks.");
+            return ("Did not pass initialization checks.");
         case ERR_ASSERTION_FAILED:
             return ("Assertion failed.");
     }
