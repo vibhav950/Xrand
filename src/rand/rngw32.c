@@ -228,13 +228,7 @@ BOOL RandPoolInit(void)
         /* Use BCRYPT_RNG_ALGORITHM as the underlying random number
            generation algorithm  for BCryptGenRandom() which is the
            AES-256 counter mode based random  generator  as defined
-           in SP800-90.
-
-           Note: If it is available,  do not use BCRYPT_RNG_ALGORITHM
-           as the RNG algorithm for BCryptGenRandom() due to security
-           concerns regarding  the existence of  a potential backdoor
-           to the SP800-90 non-compliant DUAL_EC_DRBG. This algorithm
-           was removed from the CNG beginning from Windows 10. */
+           in SP800-90. */
         if (BCryptOpenAlgorithmProvider(
                 &hBCryptProv,
                 BCRYPT_RNG_ALGORITHM,
@@ -400,13 +394,13 @@ BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam)
     Add32(dwProcessId); /* The window thread ID */
 
     GetGUIThreadInfo(dwThreadId, (PGUITHREADINFO)&gui);
-    AddBuf((uint8_t *)&gui, sizeof(GUITHREADINFO)); /* GUI info of the thread */
+    AddBuf(Ptr8(gui), sizeof(GUITHREADINFO)); /* GUI info of the thread */
 
     /* Get all sorts of  window information,  including the window
        client area coordinates, bounding rectangle dimensions, and
        the extended window style. */
     GetWindowInfo(hWnd, (PWINDOWINFO)&wi);
-    AddBuf((uint8_t *)&wi, sizeof(WINDOWINFO)); /* Wido*/
+    AddBuf(Ptr8(wi), sizeof(WINDOWINFO));
 
     return TRUE;
 }
@@ -866,7 +860,7 @@ BOOL RandSlowPoll(void)
         STARTUPINFO startupInfo;
         startupInfo.cb = sizeof(STARTUPINFO);
         GetStartupInfo(&startupInfo);
-        AddBuf((uint8_t *)&startupInfo, sizeof(STARTUPINFO));
+        AddBuf(Ptr8(startupInfo), sizeof(STARTUPINFO));
         bAddedStartupInfo = TRUE;
     }
 
@@ -1056,9 +1050,9 @@ BOOL RandSlowPoll(void)
         MIB_TCPSTATS tcpStats;
         MIB_IPSTATS ipStats;
         if (pGetTcpStatisticsEx(&tcpStats, AF_INET) == NO_ERROR)
-            AddBuf((uint8_t *)&tcpStats, sizeof(MIB_TCPSTATS));
+            AddBuf(Ptr8(tcpStats), sizeof(MIB_TCPSTATS));
         if (pGetIpStatisticsEx(&ipStats, AF_INET) == NO_ERROR)
-            AddBuf((uint8_t *)&ipStats, sizeof(MIB_IPSTATS));
+            AddBuf(Ptr8(ipStats), sizeof(MIB_IPSTATS));
     }
 
     /* Find out whether this is an NT server or workstation if necessary */
@@ -1149,7 +1143,7 @@ BOOL RandSlowPoll(void)
                 if (pGpuZData->version == 1)
                 {
                     EnterCriticalSection(&randCritSec);
-                    AddBuf((uint8_t *)&pGpuZData, sizeof(GPUZ_SH_MEM));
+                    AddBuf((uint8_t *)pGpuZData, sizeof(GPUZ_SH_MEM));
                     LeaveCriticalSection(&randCritSec);
                 }
                 UnmapViewOfFile(pGpuZData);
@@ -1170,7 +1164,7 @@ BOOL RandSlowPoll(void)
                      MapViewOfFile(hCoreTempData, FILE_MAP_READ, 0, 0, 0)) != NULL)
             {
                 EnterCriticalSection(&randCritSec);
-                AddBuf((uint8_t *)&pCoreTempData, sizeof(CORE_TEMP_SHARED_DATA));
+                AddBuf((uint8_t *)pCoreTempData, sizeof(CORE_TEMP_SHARED_DATA));
                 LeaveCriticalSection(&randCritSec);
 
                 UnmapViewOfFile(pCoreTempData);
