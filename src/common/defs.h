@@ -20,6 +20,10 @@
 
 #define XRAND_VERSION "1.0.1"
 
+#ifdef _WIN32
+    #include <windows.h>
+#endif
+
 #ifdef __cplusplus
     #define EXTERNC extern "C"
 #else
@@ -35,22 +39,22 @@
 
 #include <stdint.h>
 
-typedef __int8 s8;
+typedef __int8  s8;
 typedef __int16 s16;
 typedef __int32 s32;
 typedef __int64 s64;
 
-typedef unsigned __int8 byte;
-typedef unsigned __int8 u8;
+typedef unsigned __int8  byte;
+typedef unsigned __int8  u8;
 typedef unsigned __int16 u16;
 typedef unsigned __int32 u32;
 typedef unsigned __int64 u64;
 
-#define Ptrv(_ptr)      ((void *)(&(_ptr)))
-#define Ptr8(_ptr)      ((u8 *)(&(_ptr)))
-#define Ptr16(_ptr)     ((u16 *)(&(_ptr)))
-#define Ptr32(_ptr)     ((u32 *)(&(_ptr)))
-#define Ptr64(_ptr)     ((u64 *)(&(_ptr)))
+#define Ptrv(_ptr)      ((void *)(_ptr))
+#define Ptr8(_ptr)      ((u8 *)(_ptr))
+#define Ptr16(_ptr)     ((u16 *)(_ptr))
+#define Ptr32(_ptr)     ((u32 *)(_ptr))
+#define Ptr64(_ptr)     ((u64 *)(_ptr))
 
 #ifndef max
 #define max(_a, _b)     (((_a) > (_b)) ? (_a) : (_b))
@@ -60,18 +64,16 @@ typedef unsigned __int64 u64;
 #define min(_a, _b)     (((_a) < (_b)) ? (_a) : (_b))
 #endif
 
-#define count(_arr)     (sizeof(_arr) / sizeof((_arr)[0]))
-#define ceil_div(_x, _y) ((_x) / (_y) + ((_x) % (_y) ? 1 : 0))
+#define count(_arr)       (sizeof(_arr) / sizeof((_arr)[0]))
+#define ceil_div(_x, _y)  ((_x) / (_y) + ((_x) % (_y) ? 1 : 0))
 #define floor_div(_x, _y) ((_x) / (_y))
 
-typedef enum
-{
+typedef enum {
     false = 0,
     true
 } bool;
 
-typedef enum
-{
+typedef enum {
     FAILURE = 0,
     SUCCESS
 } status_t;
@@ -99,21 +101,20 @@ static volatile memset_t __memz = memset;
 #endif
 
 // The size of the memory to be copied must be a multiple of 32
-#define copy32(dst, src, size) do {\
-    volatile __int32 *d = (volatile __int32*)(dst);\
-    volatile __int32 *s = (volatile __int32*)(src);\
-    size_t c = (size/4);\
-    while (c--) *d++ = *s++;\
+#define copy32(dst, src, size) do {                  \
+    volatile __int32 *d = (volatile __int32*)(dst);  \
+    volatile __int32 *s = (volatile __int32*)(src);  \
+    size_t c = (size/4);                             \
+    while (c--) *d++ = *s++;                         \
 } while (0)
 
-#define zcopy32(dst, src, size) do {\
-    volatile __int32 *d = (volatile __int32*)(dst);\
-    volatile __int32 *s = (volatile __int32*)(src);\
-    size_t c = (size/4);\
-    while (c--) {\
-        *d++ = *s;\
-        *s++ = 0;\
-    }\
+#define zcopy32(dst, src, size) do {                 \
+    volatile __int32 *d = (volatile __int32*)(dst);  \
+    volatile __int32 *s = (volatile __int32*)(src);  \
+    size_t c = (size/4);                             \
+    while (c--) {                                    \
+        *d++ = *s; *s++ = 0;                         \
+    }                                                \
 } while(0)
 
 #define ALIGN(_N)    __attribute__( ( aligned(_N) ) )
@@ -128,12 +129,12 @@ static volatile memset_t __memz = memset;
 
 #pragma intrinsic(_rotl8, _rotl16, _rotr8, _rotr16)
 
-#define ROTL8(_x, _s) _rotl8((_x), (_s))
+#define ROTL8(_x, _s)  _rotl8((_x), (_s))
 #define ROTL16(_x, _s) _rotl16((_x), (_s))
 #define ROTL32(_x, _s) _rotl((_x), (_s))
 #define ROTL64(_x, _s) _rotl64((_x), (_s))
 
-#define ROTR8(_x, _s) _rotr8((_x), (_s))
+#define ROTR8(_x, _s)  _rotr8((_x), (_s))
 #define ROTR16(_x, _s) _rotr16((_x), (_s))
 #define ROTR32(_x, _s) _rotr((_x), (_s))
 #define ROTR64(_x, _s) _rotr64((_x), (_s))
