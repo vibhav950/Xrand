@@ -30,7 +30,7 @@ pacman -S mingw-w64-x86_64-openssl
 
 You can obtain a local copy of the Git repository to compile the source code and run tests
 
-```powershell
+```shell
 git clone https://github.com/vibhav950/Xrand.git
 cd Xrand
 make
@@ -67,7 +67,7 @@ int main(void)
 
 If you wish to contribute to Xrand either to fix bugs or contribute new features, you will have to fork this GitHub repository `vibhav950/Xrand` and clone your public fork
 
-```powershell
+```shell
 git clone https://github.com/yourname/Xrand.git
 ```
 
@@ -75,5 +75,5 @@ This is necessary since all development for this project will be done only via G
 
 ## Todo
 
-* [ ] Generation of probable primes based on the Miller-Rabin primality test as defined in the [FIPS 186-5](https://csrc.nist.gov/pubs/fips/186-5/final) standard.
+* [ ] Generation of probable primes based on the Miller-Rabin primality test as defined in the [FIPS 186-5](https://csrc.nist.gov/pubs/fips/186-5/final) standard (this was more or less done in [this commit](https://github.com/vibhav950/Xrand/commit/97527d426f9d167ea6b1b0cbdff4c825ddfbcbee), but the `bn_mul_2` function and `dh_flag` feature of `bn_check_probable_prime` need fixing).
 * [ ] Modes of operation for providing key streams of different strength levels (or randomness "quality") so that the client application can directly instantiate the generator with a preset security strength.
