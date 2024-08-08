@@ -79,7 +79,7 @@ void RngMix (void);
  *
  * Returns 1 if the bytes were fetched successfully, 0 otherwise.
  */
-bool RngFetchBytes (uint8_t* out, size_t len, int forceSlowPoll);
+bool RngFetchBytes (uint8_t* out, size_t len);
 
 extern BOOL bStrictChecksEnabled;
 extern BOOL bUserEventsEnabled;
