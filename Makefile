@@ -11,6 +11,7 @@ RM := rm -f
 
 COMMON_PATH := $(SRC_DIR)/common
 COMMON_SRCS := $(COMMON_PATH)/exceptions.c \
+			   $(COMMON_PATH)/mem.c \
 			   $(COMMON_PATH)/bignum.c
 COMMON_OBJS := $(addprefix $(BIN_DIR)/, $(notdir $(COMMON_SRCS:.c=.o)))
 

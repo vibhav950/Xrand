@@ -35,8 +35,6 @@
 #define IN
 #define OUT
 
-#define NOP do {} while(0)
-
 #include <stdint.h>
 
 typedef __int8  s8;
@@ -56,13 +54,16 @@ typedef unsigned __int64 u64;
 #define Ptr32(_ptr)     ((u32 *)(_ptr))
 #define Ptr64(_ptr)     ((u64 *)(_ptr))
 
-#ifndef max
+#ifdef max
+    #undef max
+#endif
 #define max(_a, _b)     (((_a) > (_b)) ? (_a) : (_b))
-#endif
 
-#ifndef min
-#define min(_a, _b)     (((_a) < (_b)) ? (_a) : (_b))
+
+#ifdef min
+    #undef min
 #endif
+#define min(_a, _b)     (((_a) < (_b)) ? (_a) : (_b))
 
 #define count(_arr)       (sizeof(_arr) / sizeof((_arr)[0]))
 #define ceil_div(_x, _y)  ((_x) / (_y) + ((_x) % (_y) ? 1 : 0))
@@ -86,7 +87,7 @@ typedef enum {
 
 // Securely clear memory containing secrets
 #ifdef _WIN32
-#define zeroize(ptr, len) RtlSecureZeroMemory(ptr, len)
+    #define zeroize(ptr, len) RtlSecureZeroMemory(ptr, len)
 #else
 /**
  * Provide a secure way to clear a block of memory by
@@ -94,10 +95,10 @@ typedef enum {
  * must always dereference it, and therefore cannot
  * optimize away the call to memset.
  */
-#include <string.h>
-typedef void *(*memset_t)(void *_p, int _zv, size_t _nc);
-static volatile memset_t __memz = memset;
-#define zeroize(ptr, len) __memz(ptr, 0, len)
+    #include <string.h>
+    typedef void *(*memset_t)(void *_p, int _zv, size_t _nc);
+    static volatile memset_t __memz = memset;
+    #define zeroize(ptr, len) __memz(ptr, 0, len)
 #endif
 
 // The size of the memory to be copied must be a multiple of 32
@@ -118,6 +119,11 @@ static volatile memset_t __memz = memset;
 } while(0)
 
 #define ALIGN(_N)    __attribute__( ( aligned(_N) ) )
+
+extern void xr_mem_cpy(void *dst, const void *src, const size_t size);
+extern void xr_mem_set(void *mem, const int val, const size_t size);
+extern void xr_mem_clr(void *mem, const size_t size);
+extern int xr_mem_cmp(const void *a, const void *b, const size_t size);
 
 #include "endianness.h"
 
