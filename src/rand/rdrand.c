@@ -27,7 +27,6 @@
 
 #include "common/defs.h"
 #include "rdrand.h"
-#include <string.h>
 
 #if defined(__x86_64__) || defined(_M_X64) || defined(_M_IX86) || defined(__i386)
     #if defined(_MSC_VER)
@@ -50,9 +49,10 @@ int check_is_intel(void)
     __get_cpuid(0, &cpuid[0], &cpuid[1], &cpuid[2], &cpuid[3]);
 #endif
 
-    if (memcmp((char *)&cpuid[1], "Genu", 4) == 0 &&
-        memcmp((char *)&cpuid[3], "ineI", 4) == 0 &&
-        memcmp((char *)&cpuid[2], "ntel", 4) == 0)
+    // Check against the "GenuineIntel" string
+    if ((cpuid[1] /*ebx*/ == 0x756e6547) &&
+        (cpuid[2] /*ecx*/ == 0x6c65746e) &&
+        (cpuid[3] /*edx*/ == 0x49656e69))
         return 1;
     return 0;
 #else // unknown compiler architecture
@@ -71,9 +71,10 @@ int check_is_amd(void)
     __get_cpuid(0, &cpuid[0], &cpuid[1], &cpuid[2], &cpuid[3]);
 #endif
 
-    if (memcmp((char *)&cpuid[1], "Auth", 4) == 0 &&
-        memcmp((char *)&cpuid[3], "enti", 4) == 0 &&
-        memcmp((char *)&cpuid[2], "cAMD", 4) == 0)
+    // Check against the "AuthenticAMD" string
+    if ((cpuid[1] /*ebx*/ == 0x68747541) &&
+        (cpuid[2] /*ecx*/ == 0x444d4163) &&
+        (cpuid[3] /*edx*/ == 0x69746e65))
         return 1;
     return 0;
 #else // unknown compiler architecture
