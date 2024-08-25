@@ -31,7 +31,6 @@
 #ifndef CTR_DRBG_H
 #define CTR_DRBG_H
 
-#include <string.h>
 #include "common/defs.h"
 #include "crypto/aes.h"
 

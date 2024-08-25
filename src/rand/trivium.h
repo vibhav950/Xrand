@@ -35,23 +35,26 @@
 
 #include "common/defs.h" 
 
-#define XR_TRM_KEY_SIZE            10
-#define XR_TRM_IV_SIZE             10
+/* The Trivium key size in bytes. */
+#define TRIVIUM_KEY_SIZE            10
+/* The Trivium IV size in bytes. */
+#define TRIVIUM_IV_SIZE             10
 
-#define XR_TRM_RESEED_PERIOD       (1ULL << 20)
+/* Period for re-seeding the CSPRNG. */
+#define TRIVIUM_RESEED_PERIOD       (1ULL << 20)
 
-/* Setup the PRNG */
-status_t TriviumCsprngStart (void);
-/* Stop the PRNG and clear the internal state */
-void TriviumCsprngStop (void);
+/* Init the Trivium CSPRNG. */
+status_t TriviumCsprngInit(void);
+/* Reset the counter and internal state. */
+void TriviumCsprngReset(void);
 
-/* Get an 8-bit random number */
-uint8_t  RandU8  (void);
-/* Get a 16-bit random number */
-uint16_t RandU16 (void);
-/* Get a 32-bit random number */
-uint32_t RandU32 (void);
-/* Get a 64-bit random number */
-uint64_t RandU64 (void);
+/* Fetch an 8-bit random number. */
+u8 TriviumRand8();
+/* Fetch a 16-bit random number. */
+u16 TriviumRand16();
+/* Fetch a 32-bit random number. */
+u32 TriviumRand32();
+/* Fetch a 64-bit random number. */
+u64 TriviumRand64();
 
 #endif /* TRIVIUM_H */
