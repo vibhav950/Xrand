@@ -25,8 +25,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "common/defs.h"
 #include "rdrand.h"
+#include "common/defs.h"
 
 #if defined(__x86_64__) || defined(_M_X64) || defined(_M_IX86) || defined(__i386)
     #if defined(_MSC_VER)

@@ -1159,7 +1159,6 @@ int bn_mul_2(BIGNUM *A, BIGNUM *B, BIGNUM *X)
 	/* X = A0*B0 + T + A1*B1 */
 	BN_CHECK(bn_add_abs(&T, &A1B1, X));
 
-
 cleanup:
 
 	bn_init(&A1, &A0, &B1, &B0, &A0B0, &A1B1, &T, NULL);

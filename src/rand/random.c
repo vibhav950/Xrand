@@ -33,22 +33,22 @@
 #define _cos(x) cos(x)
 #define _pow(x, y) pow(x, y)
 
-static inline uint64_t _ranged(uint64_t a, uint64_t b)
+static inline uint64_t ranged(uint64_t a, uint64_t b)
 {
     if (a > b)
     {
         return -1;
     }
 
-    return a + RandU64() % ((b - a) + 1);
+    return a + TriviumRand64() % ((b - a) + 1);
 }
 
-static inline double _uni(void)
+static inline double uni(void)
 {
     ieee754_double_t temp;
 
     /* Request 64-bit random value from the PRNG */
-    uint64_t _rand = RandU64();
+    u64 rand = TriviumRand64();
 
     /**
      * Construct a 64-bit positive floating point number in [0.0, 1.0)
@@ -56,8 +56,8 @@ static inline double _uni(void)
      */
     temp.fmt.sign = 0;
     temp.fmt.exponent = IEEE754_DOUBLE_PREC_BIAS; /* Exponent bias */
-    temp.fmt.mantissa0 = ((_rand & 0xFFF) << 8) | (_rand >> 56);
-    temp.fmt.mantissa1 = ((_rand >> 12) & 0xFFFFFFFF) ^ ((_rand >> 44) & 0xFF);
+    temp.fmt.mantissa0 = ((rand & 0xFFF) << 8) | (rand >> 56);
+    temp.fmt.mantissa1 = ((rand >> 12) & 0xFFFFFFFF) ^ ((rand >> 44) & 0xFF);
 
     return temp.d - 1.0;
 }
@@ -77,7 +77,7 @@ void uniform(FILE *fp, double a, double b, int iter)
 
     for (int i = 0; i < iter; ++i)
     {
-        temp = _uni();
+        temp = uni();
         x = a + (b - a) * temp;
 
         fprintf(fp, "%.lf\n", x);
@@ -124,8 +124,8 @@ void normal(FILE *fp, double mu, double sigma, int iter)
     for (int i = 0; i < iter; ++i)
     {
         /* Generate two uniform variates uniformly distributed over [0.0, 1.0) */
-        u1 = _uni();
-        u2 = _uni();
+        u1 = uni();
+        u2 = uni();
         /* Generate independent normal variates x and y from N(mu, sigma) */
         x = (_sqrt(-2 * _log(u1)) * _cos(2 * _PI * u2)) * sigma + mu;
         y = (_sqrt(-2 * _log(u1)) * _sin(2 * _PI * u2)) * sigma + mu;
@@ -185,7 +185,7 @@ void triangular(FILE *fp, double a, double b, double c, int iter)
 
         for (int i = 0; i < iter; ++i)
         {
-            U = _uni();
+            U = uni();
 
             if (U < F)
             {
@@ -246,7 +246,7 @@ void poisson(FILE *fp, double lambda, int iter)
     for (int i = 0; i < iter; ++i)
     {
         F = p;
-        u = _uni();
+        u = uni();
         x = 0;
 
         while (u > F)
@@ -305,7 +305,7 @@ void binomial(FILE *fp, int n, double p, int iter)
         {
             a = (n + 1) * s;
             r = _pow((1 - p), n);
-            u = _uni();
+            u = uni();
             x = 0;
 
             while (u > r)
@@ -367,7 +367,7 @@ void randstr(FILE *fp, char lc, char uc, char nc, char sc, int len, int iter)
     {
         for (int ch = 0; ch < len; ++ch)
         {
-            fprintf(fp, "%c", charset[RandU8() % strlen(charset)]);
+            fprintf(fp, "%c", charset[TriviumRand8() % strlen(charset)]);
         }
         fprintf(fp, "\n");
     }
