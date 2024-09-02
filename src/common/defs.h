@@ -81,6 +81,8 @@ typedef enum {
 
 #define ASSERT(_stmt) do { if (SUCCESS != (_stmt)) exit(1); } while(0)
 
+#define NOP do { } while(0)
+
 #ifndef MAX_PATH
     #define MAX_PATH 256
 #endif
