@@ -75,5 +75,7 @@ This is necessary since all development for this project will be done only via G
 
 ## Todo
 
-* [ ] Generation of probable primes based on the Miller-Rabin primality test as defined in the [FIPS 186-5](https://csrc.nist.gov/pubs/fips/186-5/final) standard (this was more or less done in [this commit](https://github.com/vibhav950/Xrand/commit/97527d426f9d167ea6b1b0cbdff4c825ddfbcbee), but the `bn_mul_2` function and `dh_flag` feature of `bn_check_probable_prime` need fixing).
+* [ ] The [Karatsuba multiplication](https://github.com/vibhav950/Xrand/blob/cd5960b72a57fbacf12e89c54d64206ce559f986/src/common/bignum.c#L1160) function needs fixing; as of this todo the Karatsuba cutoff values have been set to `INT_MAX` until I or somebody can get to fixing this function, and all calls to `bn_mul` are done using the O(m.n) gradeschool approach.
 * [ ] Modes of operation for providing key streams of different strength levels (or randomness "quality") so that the client application can directly instantiate the generator with a preset security strength.
+* [ ] Write tests for the SP 800-90A HASH_DRBG and CTR_DRBG. Although I have unofficially tested the CTR_DRBG before upload (it is currently being used for the MR primality testing and prime generation), the whole thing needs to be done from scratch.
+* [ ] The RNG has no explicit mechanism to calculate a real-time entropy estimate of the pool and block/reject requests from the calling application until the entropy is greater than a 'healthy' threshold. This may especially be a concern for applications that request random bytes from the pool at extremely short intervals, not leaving time for enough fast polls between successive requests (by default, a slow pool is done upon every request).
