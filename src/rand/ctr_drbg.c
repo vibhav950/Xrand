@@ -21,15 +21,11 @@
 
 /* Add a 32-bit value to the last 4 bytes of the counter,
    represented in big-endian format */
-static inline void _ctr_drbg_incr32 (CTR_DRBG_STATE *state, uint32_t n)
-{
-#if defined(__LITTLE_ENDIAN__)
-    state->V.words[3] = 
-        BSWAP32(BSWAP32(state->V.words[3]) + n);
-#else
-    state->V.words[3] = (state->V.words[3] + n);
-#endif
-}
+#define CTR_DRBG_INCR32(x, n)                    \
+do {                                             \
+    state->V.words[3] =                          \
+    BSWAP32(BSWAP32(state->V.words[3]) + n);     \
+} while (0)
 
 /* Section 10.2.1.3.1 */
 status_t ctr_drbg_init(CTR_DRBG_STATE *state, 
@@ -64,9 +60,9 @@ status_t ctr_drbg_init(CTR_DRBG_STATE *state,
 }
 
 /* Section 10.2.1.2 */
-status_t ctr_drbg_update (CTR_DRBG_STATE *state,
-                          const uint8_t *provided_data,
-                          size_t data_len)
+status_t ctr_drbg_update(CTR_DRBG_STATE *state,
+                         const uint8_t *provided_data,
+                         size_t data_len)
 {
     if (data_len > CTR_DRBG_ENTROPY_LEN)
         return FAILURE;
@@ -77,7 +73,7 @@ status_t ctr_drbg_update (CTR_DRBG_STATE *state,
     aes256_expand_key(&state->K, &ks);
 
     for (size_t i = 0; i < CTR_DRBG_ENTROPY_LEN; i += AES_BLOCK_SIZE) {
-        _ctr_drbg_incr32(state, 1); /* Increment counter */
+        CTR_DRBG_INCR32(state, 1); /* Increment counter */
 
         aes256_encr_block(state->V.bytes, temp + i, &ks);
     }
@@ -93,10 +89,10 @@ status_t ctr_drbg_update (CTR_DRBG_STATE *state,
 }
 
 /* Section 10.2.1.4.1 */
-status_t ctr_drbg_reseed (CTR_DRBG_STATE *state,
-                          const uint8_t entropy[CTR_DRBG_ENTROPY_LEN],
-                          const uint8_t *additional_input,
-                          size_t additional_input_len)
+status_t ctr_drbg_reseed(CTR_DRBG_STATE *state,
+                         const uint8_t entropy[CTR_DRBG_ENTROPY_LEN],
+                         const uint8_t *additional_input,
+                         size_t additional_input_len)
 {
     uint8_t seed_material[CTR_DRBG_ENTROPY_LEN];
 
@@ -121,11 +117,11 @@ status_t ctr_drbg_reseed (CTR_DRBG_STATE *state,
 }
 
 /* Section 10.2.1.5.1 */
-status_t ctr_drbg_generate (CTR_DRBG_STATE *state,
-                            uint8_t *out,
-                            size_t out_len,
-                            const uint8_t *additional_input,
-                            size_t additional_input_len)
+status_t ctr_drbg_generate(CTR_DRBG_STATE *state,
+                           uint8_t *out,
+                           size_t out_len,
+                           const uint8_t *additional_input,
+                           size_t additional_input_len)
 {
     if (out_len > CTR_DRBG_MAX_OUT_LEN)
         return FAILURE;
@@ -156,7 +152,7 @@ status_t ctr_drbg_generate (CTR_DRBG_STATE *state,
 
     /* Generate the requested number of blocks */
     for (;;) {
-        _ctr_drbg_incr32(state, 1); /* Increment counter */
+        CTR_DRBG_INCR32(state, 1); /* Increment counter */
         
         aes256_encr_block(state->V.bytes, temp, &ks);
 
@@ -180,7 +176,7 @@ status_t ctr_drbg_generate (CTR_DRBG_STATE *state,
     return SUCCESS;
 }
 
-void ctr_drbg_clear (CTR_DRBG_STATE *state)
+void ctr_drbg_clear(CTR_DRBG_STATE *state)
 {
     /* Clear the state buffers to prevent leaks */
     zeroize ((uint8_t *) state, sizeof(CTR_DRBG_STATE));

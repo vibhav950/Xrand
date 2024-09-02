@@ -57,7 +57,7 @@ typedef struct _CTR_DRBG_STATE {
     /* Reseed counter */
     uint64_t counter;
     /* Flags */
-    uint32_t flags;
+    uint8_t flags;
 } CTR_DRBG_STATE;
 
 
