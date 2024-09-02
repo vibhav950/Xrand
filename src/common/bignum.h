@@ -134,6 +134,10 @@ int bn_write_string(int radix, char *s, int *slen, const BIGNUM *X);
 void bn_set_lsb(BIGNUM *X);
 /* Set the most significant bit of X*/
 void bn_set_msb(BIGNUM *X);
+/* Get the n-th bit of X */
+int bn_get_bit(BIGNUM *X, size_t n);
+/* Set the n-th bit of X to v */
+int bn_set_bit(BIGNUM *X, size_t n, uint8_t v);
 /* Get the # of most significant bits in X */
 int bn_msb(const BIGNUM *X);
 /* Get the # of least significant trailing zeros in X */
@@ -196,9 +200,9 @@ int bn_gcd(BIGNUM *A, BIGNUM *B, BIGNUM *G);
 int bn_inv_mod(BIGNUM *A, BIGNUM *N, BIGNUM *X);
 
 /* Miller-Rabin probabilistic primality test */
-int bn_check_probable_prime(BIGNUM *W, int iter, void *rng);
+int bn_check_probable_prime(BIGNUM *W, int iter, void *f_rng);
 /* Generate a probable prime */
-int bn_generate_proabable_prime(BIGNUM *X, int nbits, int dh_flag, void *rng);
+int bn_generate_proabable_prime(BIGNUM *X, int nbits, void *f_rng);
 
 /* Perform tests */
 int bn_self_test(void *rng, int verbose, FILE *fp);
