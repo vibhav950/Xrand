@@ -166,13 +166,13 @@ int bn_from_udbl(BIGNUM *X, const bn_udbl_t n)
 
 	// Endianness issue if machine is not little-endian?
 #if (WORD_SIZE == 1)
-	n->p[0] = (n_cpy & 0x000000ff);
-	n->p[1] = (n_cpy & 0x0000ff00) >> 8;
-	n->p[2] = (n_cpy & 0x00ff0000) >> 16;
-	n->p[3] = (n_cpy & 0xff000000) >> 24;
+	X->p[0] = (n_cpy & 0x000000ff);
+	X->p[1] = (n_cpy & 0x0000ff00) >> 8;
+	X->p[2] = (n_cpy & 0x00ff0000) >> 16;
+	X->p[3] = (n_cpy & 0xff000000) >> 24;
 #elif (WORD_SIZE == 2)
-	n->p[0] = (n_cpy & 0x0000ffff);
-	n->p[1] = (n_cpy & 0xffff0000) >> 16;
+	X->p[0] = (n_cpy & 0x0000ffff);
+	X->p[1] = (n_cpy & 0xffff0000) >> 16;
 #elif (WORD_SIZE == 4)
 	X->p[0] = (bn_uint_t)n_cpy;
 	n_cpy >>= 32;
@@ -223,13 +223,13 @@ int bn_from_sdbl(BIGNUM *X, const bn_sdbl_t n)
 
 	// Endianness issue if machine is not little-endian?
 #if (WORD_SIZE == 1)
-	n->p[0] = (n_abs & 0x000000ff);
-	n->p[1] = (n_abs & 0x0000ff00) >> 8;
-	n->p[2] = (n_abs & 0x00ff0000) >> 16;
-	n->p[3] = (n_abs & 0xff000000) >> 24;
+	X->p[0] = (n_abs & 0x000000ff);
+	X->p[1] = (n_abs & 0x0000ff00) >> 8;
+	X->p[2] = (n_abs & 0x00ff0000) >> 16;
+	X->p[3] = (n_abs & 0xff000000) >> 24;
 #elif (WORD_SIZE == 2)
-	n->p[0] = (n_abs & 0x0000ffff);
-	n->p[1] = (n_abs & 0xffff0000) >> 16;
+	X->p[0] = (n_abs & 0x0000ffff);
+	X->p[1] = (n_abs & 0xffff0000) >> 16;
 #elif (WORD_SIZE == 4)
 	X->p[0] = (bn_uint_t)n_abs;
 	n_abs >>= 32;
@@ -475,10 +475,53 @@ inline void bn_set_msb(BIGNUM *X)
 }
 
 
-/* Returns the number of most significant bits in X */
+/* Get the n-th bit of X */
+inline int bn_get_bit(BIGNUM *X, size_t n)
+{
+	if (X->n * BIW <= n)
+		return 0;
+
+	return ((X->p[n / BIW] >> (n % BIW)) & 0x01);
+}
+
+
+/* Set the n-th bit of X to v */
+int bn_set_bit(BIGNUM *X, size_t n, uint8_t v)
+{
+	BN_REQUIRE(X, "X is null");
+	BN_REQUIRE(X->n > 0, "X is empty");
+
+	int ret = 0;
+	size_t off = n / BIW;
+	size_t idx = n % BIW;
+
+	if (n <= 0)
+		return BN_ERR_BAD_INPUT_DATA;
+
+	if (v != 0 && v != 1)
+		return BN_ERR_BAD_INPUT_DATA;
+
+	BN_CHECK(bn_grow(X, off + 1));
+
+	X->p[off] &= ~((bn_uint_t)0x01 << idx);
+	X->p[off] |= (bn_uint_t)v << idx;
+
+cleanup:
+
+	return ret;
+}
+
+
+/* Returns the number of bits in X */
 inline int bn_msb(const BIGNUM *X)
 {
 	BN_REQUIRE(X, "X is null");
+
+#if defined(__has_builtin)
+#if (WORD_SIZE == 4) && __has_builtin(__builtin_clzl)
+	#define _bn_uint_clzl __builtin_clzl
+#endif
+#endif
 
 	int i, j;
 
@@ -489,12 +532,19 @@ inline int bn_msb(const BIGNUM *X)
 		if (X->p[i] != 0)
 			break;
 	}
-	for (j = BIW - 1; j >= 0; --j) {
-		if (((X->p[i] >> j) & 1) != 0)
-			break;
-	}
 
-	return (i * BIW) + j + 1;
+#if defined(_bn_uint_clzl)
+	j = _bn_uint_clzl(X->p[i]);
+#else
+	bn_uint_t mask = (bn_uint_t)1 << (BIW - 1);
+	for (j = 0; j < BIW; ++j) {
+		if (X->p[i] & mask)
+			break;
+		mask >>= 1;
+	}
+#endif
+
+	return (i * BIW) + (BIW - j);
 }
 
 
@@ -505,16 +555,16 @@ inline int bn_lsb(const BIGNUM *X)
 
 #if defined(__has_builtin)
 #if (WORD_SIZE == 4) && __has_builtin(__builtin_ctzl)
-	#define bn_uint_ctzl __builtin_ctzl
+	#define _bn_uint_ctzl __builtin_ctzl
 #endif
 #endif
 
-#if defined(bn_uint_ctzl)
+#if defined(_bn_uint_ctzl)
 	int i;
 	
 	for (i = 0; i < X->n; ++i) {
 		if (X->p[i] != 0)
-			return i * BIW + bn_uint_ctzl(X->p[i]);
+			return (i * BIW) + _bn_uint_ctzl(X->p[i]);
 	}
 #else
 	int i, j, count = 0;
@@ -1001,9 +1051,12 @@ int bn_rshift(BIGNUM *X, const int count)
 	return 0;
 }
 
-
-#define BN_KARATSUBA_CUTOFF 80
-#define BN_KARATSUBA_SQUARE_CUTOFF 100
+#include <limits.h>
+// TODO: Fix Karatsuba multiplication
+// #define BN_KARATSUBA_CUTOFF 80
+// #define BN_KARATSUBA_SQUARE_CUTOFF 100
+#define BN_KARATSUBA_CUTOFF INT_MAX
+#define BN_KARATSUBA_SQUARE_CUTOFF INT_MAX
 
 #define MLAC                      \
 	r   = *(s++) * (bn_udbl_t) b; \
@@ -2031,8 +2084,11 @@ static int num_trial_divisions(int nbits)
    Note: Always explicitly check for the return value of this 
    function being either 0 or 1, since the the function can also
    return with error. */
-int bn_check_probable_prime(BIGNUM *W, int iter, void *rng)
+int bn_check_probable_prime(BIGNUM *W, int iter, void *f_rng)
 {
+	BN_REQUIRE(W, "W is null");
+	BN_REQUIRE(f_rng, "f_rng is null");
+
 	BIGNUM Z, M, B, RR, T;
 	int ret = -1, a, i, j, wlen;
 
@@ -2057,7 +2113,7 @@ int bn_check_probable_prime(BIGNUM *W, int iter, void *rng)
 	for (i = 0; i < iter; ++i) {
 		/* Pick a random 'B' such that len(B) == wlen and 1 < B < W-1 */
 		do {
-			if (ctr_drbg_generate(rng, (byte *)B.p, ceil_div(wlen, 8), NULL, 0) != SUCCESS) {
+			if (ctr_drbg_generate(f_rng, (byte *)B.p, ceil_div(wlen, 8), NULL, 0) != SUCCESS) {
 				ret = BN_ERR_INTERNAL_FAILURE;
 				goto cleanup;
 			}
@@ -2106,124 +2162,116 @@ cleanup:
 }
 
 
-/* Generate a random pseudo-prime number [HAC 4.44].
-   
-   If dh_flag is set to 1, both X and (X-1)/2 are pseudo-prime.
-   
-   Returns 0 on success. */
-int bn_generate_proabable_prime(BIGNUM *X, int nbits, int dh_flag, void *rng)
+/* Check with small successive primes
+
+   Return values:
+   0: No prime factor found, proceed to test with Miller-Rabin
+   1: Number is certainly prime, no further tests required
+   2: Number is certainly non-prime
+   negative value: error */
+static int bn_trial_divisions(BIGNUM *X, int nrounds)
 {
-	BIGNUM Y, TX;
-	int ret = 0, i, j;
+	BN_REQUIRE(X, "X is null");
+	BN_REQUIRE(X->n > 0, "X is empty");
+
+	int ret, i;
 	bn_uint_t r;
 
-	if (nbits < WORD_SIZE)
+	if (nrounds > N_PRIMES)
+		return BN_ERR_BAD_INPUT_DATA;
+
+	if ((X->p[0] & 1) == 0)
+		return BN_ERR_BAD_INPUT_DATA;
+
+	for (i = 0; i < nrounds; ++i) {
+		if (bn_cmp_udbl(X, primes[i]) == 0) {
+			/* Found a certain prime */
+			ret = 1;
+			goto cleanup;
+		}
+
+		BN_CHECK(bn_mod_uint(X, primes[i], &r));
+		if (r == 0) {
+			/* Found a prime factor */
+			ret = 2;
+			goto cleanup;
+		}
+	}
+
+	ret = 0;
+
+cleanup:
+
+	return ret;
+}
+
+
+/* Generate a random pseudo-prime number [HAC 4.44].
+   
+   Returns 0 on success. */
+int bn_generate_proabable_prime(BIGNUM *X, int nbits, void *f_rng)
+{
+	BN_REQUIRE(X, "X is null");
+	BN_REQUIRE(f_rng, "f_rng is null");
+
+	BIGNUM TX;
+	int ret = 0, i;
+
+	if (nbits < 3)
 		return BN_ERR_BAD_INPUT_DATA;
 	if (nbits > BN_MAX_BITS)
 		return BN_ERR_NOT_ENOUGH_LIMBS;
 
-	bn_init(&Y, &TX, NULL);
+	bn_init(&TX, NULL);
 	BN_CHECK(bn_grow(&TX, BN_BITS_TO_LIMBS(nbits)));
 
 generate:
 	/* Generate an nbits long odd random number */
-	if (ctr_drbg_generate(rng, (byte *)TX.p, ceil_div(nbits, 8), NULL, 0) != SUCCESS) {
+	if (ctr_drbg_generate(f_rng, (byte *)TX.p, ceil_div(nbits, 8), NULL, 0) != SUCCESS) {
 		ret = BN_ERR_INTERNAL_FAILURE;
 		goto cleanup;
 	}
 
-	j = bn_msb(&TX);
-	if (j < nbits)
-		BN_CHECK(bn_lshift(&TX, nbits - j));
-	if (j > nbits)
-		BN_CHECK(bn_rshift(&TX, j - nbits));
-	
+	i = bn_msb(&TX);
+	if (i < nbits)
+		BN_CHECK(bn_lshift(&TX, nbits - i));
+	if (i > nbits)
+		BN_CHECK(bn_rshift(&TX, i - nbits));
+
 	TX.p[0] |= 1;
 
-	int t1 = num_trial_divisions(nbits);
+	int trial_rounds = num_trial_divisions(nbits);
 
 	/* Calculate the number of rounds of Miller-Rabin which gives
 	   a false positive rate of 2^{-80} [HAC Table 4.4] */
-	int t2 = (nbits >= 1300) ? 2 :
+	int mr_rounds = (nbits >= 1300) ? 2 :
 		(nbits >= 850) ? 3 :
 		(nbits >= 550) ? 5 :
 		(nbits >= 350) ? 8 :
 		(nbits >= 250) ? 12 :
 		(nbits >= 150) ? 18 : 27;
 
-	if (dh_flag == 0) {
-		for (;;) {
-			/* Test with small factors first */
-			for (i = 0; i < t1; ++i) {
-				if (bn_cmp_udbl(&TX, primes[i]) <= 0 || bn_cmp_udbl(&Y, primes[i]) <= 0)
-					continue;
-				BN_CHECK(bn_mod_uint(&TX, primes[i], &r));
-				if (r == 0)
-					continue;
-			}
+	for (;;) {
+		/* Test with small factors first */
+		if ((ret = bn_trial_divisions(&TX, trial_rounds)) == 1)
+			break;
+		if (ret < 0)
+			goto cleanup;
+		if (ret == 2)
+			goto next;
 
-			if ((ret = bn_check_probable_prime(&TX, t2, rng)) < 0)
-				goto cleanup;
-
-			if (ret == 1)
-				break;
-			
-			BN_CHECK(bn_add_sdbl(&TX, 2, &TX));
-		}
-
-		/* Make sure the number is still nbits long */
-		if (bn_msb(&TX) != nbits)
-			goto generate;
-	} else {
-		/* A necessary condition for Y and X = 2Y + 1 to be prime
-		   is X = 2 (mod 3) (which is equivalent to Y = 2 (mod 3)).
-		   Make sure it is satisfied, while keeping X = 3 (mod 4) */
-		TX.p[0] |= 2;
-
-		BN_CHECK(bn_mod_uint(&TX, 3, &r));
-
-		if (r == 0)
-			BN_CHECK(bn_add_sdbl(&TX, 8, &TX));
-		else if (r == 1)
-			BN_CHECK(bn_add_sdbl(&TX, 4, &TX));
-		
-		/* Set Y = (X-1) / 2, which is X / 2 since X is odd */
-		BN_CHECK(bn_assign(&Y, &TX));
-		BN_CHECK(bn_rshift(&Y, 1));
-
-		for(;;) {
-			/* Test with small factors first */
-			for (i = 0; i < t1; ++i) {
-				if (bn_cmp_udbl(&TX, primes[i]) <= 0 || bn_cmp_udbl(&Y, primes[i]) <= 0)
-					goto next;
-				BN_CHECK(bn_mod_uint(&TX, primes[i], &r));
-				if (r == 0)
-					goto next;
-				BN_CHECK(bn_mod_uint(&Y, primes[i], &r));
-				if (r == 0)
-					goto next;
-			}
-
-			/* Do multiple rounds of Miller-Rabin */
-			if ((ret = bn_check_probable_prime(&TX, t2, rng)) < 0)
-				goto cleanup;
-			if (ret == 1)
-				break;
-			if ((ret = bn_check_probable_prime(&Y, t2, rng)) < 0)
-				goto cleanup;
-			if (ret == 1)
-				break;
+		/* Do multiple rounds of Miller-Rabin */
+		if ((ret = bn_check_probable_prime(&TX, mr_rounds, f_rng)) == 1)
+			break;
+		if (ret < 0)
+			goto cleanup;
 next:
-			/* We want to preserve Y = (X-1) / 2 and Y = 1 (mod 2) and Y = 2 (mod 3)
-			  (eq X = 3 (mod 4) and X = 2 (mod 3)) so we up X by 12 and Y by 6, and
-			  test the next candidates */
-			BN_CHECK(bn_add_sdbl(&TX, 12, &TX));
-			BN_CHECK(bn_add_sdbl(&Y, 6, &Y));
-		}
-
-		if (bn_msb(&TX) != nbits)
-			goto generate;
+		BN_CHECK(bn_add_sdbl(&TX, 2, &TX));
 	}
+
+	/* Make sure the number is still nbits long */
+	if (bn_msb(&TX) != nbits)
+		goto generate;
 
 	BN_CHECK(bn_assign(X, &TX));
 
@@ -2231,12 +2279,13 @@ next:
 
 cleanup:
 
-	bn_zfree(&Y, &TX, NULL);
+	bn_zfree(&TX, NULL);
 
 	return ret;
 }
 
 
+#if defined(BN_TESTS)
 #define TEST_MSG(v, fp, i, msg, res)                            \
 do {                                                            \
 	if (v)                                                      \
@@ -2275,7 +2324,7 @@ static const bn_udbl_t gcd_tvec[N_GCD_TVEC][3] = {
 };
 
 /* Test routine */
-int bn_self_test(void *rng, int verbose, FILE *fp)
+int bn_self_test(void *f_rng, int verbose, FILE *fp)
 {
 	int ret = 0, res;
 	BIGNUM A, B, C, D, E, F, G, H, M, X, Y, Z;
@@ -2384,15 +2433,15 @@ int bn_self_test(void *rng, int verbose, FILE *fp)
 	bn_zfree(&X, &Y, &Z, NULL);
 
 	// Pseudo-primality test
-	if (rng != NULL) {
+	if (f_rng != NULL) {
 		res = 0;
 		bn_init(&X, NULL);
 		for (int i = 0; i < N_PRIMES_TVEC; ++i) {
 			bn_from_udbl(&X, primes_tvec[i]);
-			if ((res = !(bn_check_probable_prime(&X, 27, rng) == 1)) != 0)
+			if ((res = !(bn_check_probable_prime(&X, 27, f_rng) == 1)) != 0)
 				break;
 			bn_from_udbl(&X, composites_tvec[i]);
-			if ((res = !(bn_check_probable_prime(&X, 27, rng) == 0)) != 0)
+			if ((res = !(bn_check_probable_prime(&X, 27, f_rng) == 0)) != 0)
 				break;
 		}
 		TEST_MSG(verbose, fp, 7, "bn_check_probable_prime", res == 0);
@@ -2405,3 +2454,6 @@ cleanup:
 
 	return ret;
 }
+#else
+int bn_self_test(void *rng, int verbose, FILE *fp) { NOP; return 0; }
+#endif /* BN_TESTS */
