@@ -715,7 +715,7 @@ BOOL RandFastPoll(void)
        as the basis for QPC.  TSCs are high-resolution  per-processor
        hardware counters  that can be accessed  with very low latency
        and overhead  (in the order of 10s or 100s of machine cycles),
-       however the  performance  varies  depending on  the  underlying
+       however the performance  varies  depending on  the  underlying
        architecture and the OS version.
 
        On Windows RT,  Windows 11,  and Windows 10  devices using Arm
