@@ -109,7 +109,7 @@ void normal(FILE *fp, double mu, double sigma, int iter)
     if (sigma < 0)
     {
         Warn("normal : invalid arguments (expected sigma >= 0)",
-             WARN_INVALID_ARGS, true);
+             WARN_INVALID_ARGS);
         return;
     }
 
@@ -167,7 +167,7 @@ void triangular(FILE *fp, double a, double b, double c, int iter)
     if (!(a < b && a <= c && c <= b))
     {
         Warn("triangular : invalid arguments (expected a < b, a <= c <= b)",
-             WARN_INVALID_ARGS, true);
+             WARN_INVALID_ARGS);
 
         return;
     }
@@ -230,7 +230,7 @@ void poisson(FILE *fp, double lambda, int iter)
     if (lambda < 0)
     {
         Warn("poisson : invalid arguments (expected lambda > 0)",
-             WARN_INVALID_ARGS, true);
+             WARN_INVALID_ARGS);
         return;
     }
 
@@ -279,7 +279,7 @@ void binomial(FILE *fp, int n, double p, int iter)
     if (!(n > 0 && 0 <= p && p <= 1))
     {
         Warn("binomial : invalid arguments (expected n > 0, 0 <= p <= 1)",
-             WARN_INVALID_ARGS, true);
+             WARN_INVALID_ARGS);
         return;
     }
 
@@ -336,7 +336,7 @@ void randstr(FILE *fp, char lc, char uc, char nc, char sc, int len, int iter)
     if (len > 1000)
     {
         Warn("randstr : invalid arguments (expected len <= 1000)",
-             WARN_INVALID_ARGS, true);
+             WARN_INVALID_ARGS);
         return;
     }
 
@@ -348,7 +348,7 @@ void randstr(FILE *fp, char lc, char uc, char nc, char sc, int len, int iter)
     if (!lc && !uc && !nc && !sc)
     {
         Warn("randstr : invalid arguments (expected non-empty charset)",
-             WARN_INVALID_ARGS, true);
+             WARN_INVALID_ARGS);
         return;
     }
 

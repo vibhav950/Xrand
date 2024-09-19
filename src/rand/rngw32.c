@@ -205,7 +205,7 @@ BOOL RandPoolInit(void)
     if ((hBCrypt = LoadLibrary("bcrypt.dll")) == NULL)
     {
         dwWin32CngLastErr = GetLastError();
-        Log(ERR_CNG, FALSE, dwWin32CngLastErr, __LINE__);
+        Log(ERR_WIN32_CNG, FALSE, dwWin32CngLastErr, __LINE__);
         goto err;
     }
     else
@@ -220,7 +220,7 @@ BOOL RandPoolInit(void)
         if (!pBCryptOpenAlgorithmProvider || !pBCryptGenRandom || !pBCryptCloseAlgorithmProvider)
         {
             dwWin32CngLastErr = GetLastError();
-            Log(ERR_CNG, FALSE, dwWin32CngLastErr, __LINE__);
+            Log(ERR_WIN32_CNG, FALSE, dwWin32CngLastErr, __LINE__);
             goto err;
         }
 
@@ -235,7 +235,7 @@ BOOL RandPoolInit(void)
                 0) != ERROR_SUCCESS)
         {
             dwWin32CngLastErr = GetLastError();
-            Log(ERR_CNG, FALSE, dwWin32CngLastErr, __LINE__);
+            Log(ERR_WIN32_CNG, FALSE, dwWin32CngLastErr, __LINE__);
             goto err;
         }
         else
@@ -535,7 +535,7 @@ BOOL AddUserEvents(void)
 
     if (!hMouseHook || !hKbdHook)
     {
-        Log(ERR_WINAPI, FALSE, GetLastError(), __LINE__);
+        Log(ERR_WIN32_WINAPI, FALSE, GetLastError(), __LINE__);
         ret = FALSE;
         goto exit;
     }
@@ -594,7 +594,7 @@ BOOL RandFastPoll(void)
         else
         {
             dwWin32CngLastErr = GetLastError();
-            Log(ERR_CNG, FALSE, dwWin32CngLastErr, __LINE__);
+            Log(ERR_WIN32_CNG, FALSE, dwWin32CngLastErr, __LINE__);
             return FALSE;
         }
     }
@@ -952,7 +952,7 @@ BOOL RandSlowPoll(void)
 
     if (hWinNativeApi == NULL)
     {
-        Log(ERR_WINAPI, FALSE, GetLastError(), __LINE__);
+        Log(ERR_WIN32_WINAPI, FALSE, GetLastError(), __LINE__);
         if (bStrictChecksEnabled)
             return FALSE;
     }
@@ -992,7 +992,7 @@ BOOL RandSlowPoll(void)
             status = pNtQuerySystemInformation(dwType[i], NULL, 0, &ulSize);
             if (status != 0xC0000004)
             {
-                Log(ERR_WINAPI, FALSE, GetLastError(), __LINE__);
+                Log(ERR_WIN32_WINAPI, FALSE, GetLastError(), __LINE__);
                 return FALSE;
             }
 
@@ -1011,7 +1011,7 @@ BOOL RandSlowPoll(void)
             else
             {
                 free(buf);
-                Log(ERR_WINAPI, FALSE, GetLastError(), __LINE__);
+                Log(ERR_WIN32_WINAPI, FALSE, GetLastError(), __LINE__);
                 return FALSE;
             }
 
@@ -1039,7 +1039,7 @@ BOOL RandSlowPoll(void)
 
     if (!hIpHlpApi)
     {
-        Log(ERR_WINAPI, FALSE, GetLastError(), __LINE__);
+        Log(ERR_WIN32_WINAPI, FALSE, GetLastError(), __LINE__);
         if (bStrictChecksEnabled)
             return FALSE;
     }
@@ -1104,7 +1104,7 @@ BOOL RandSlowPoll(void)
 
     if (!hNetApi32)
     {
-        Log(ERR_WINAPI, FALSE, GetLastError(), __LINE__);
+        Log(ERR_WIN32_WINAPI, FALSE, GetLastError(), __LINE__);
         if (bStrictChecksEnabled)
             return FALSE;
     }
@@ -1241,13 +1241,13 @@ BOOL RandFetchBytes(uint8_t *data, size_t len, int forceSlowPoll)
 
     if (data == NULL)
     {
-        Warn("Invalid data pointer (expected a non-NULL value)", WARN_INVALID_ARGS, RNG_MODE_DEBUG);
+        Warn("Invalid data pointer (expected a non-NULL value)", WARN_INVALID_ARGS);
         return FALSE;
     }
 
     if (len < 0)
     {
-        Warn("Invalid request length (expected a positive value)", WARN_INVALID_ARGS, RNG_MODE_DEBUG);
+        Warn("Invalid request length (expected a positive value)", WARN_INVALID_ARGS);
         return FALSE;
     }
 

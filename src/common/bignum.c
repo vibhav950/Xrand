@@ -1074,7 +1074,7 @@ int bn_rshift(BIGNUM *X, const int count)
 	r0 += *d; r1 += (r0 < *d);    \
 	c = r1; *(d++) = r0;
 
-static inline void bn_mul_1_hlp(int i, bn_uint_t *s, bn_uint_t *d, bn_uint_t b)
+static inline void bn_mul1_hlp(int i, bn_uint_t *s, bn_uint_t *d, bn_uint_t b)
 {
 	bn_uint_t c = 0; /* carry */
 
@@ -1114,7 +1114,7 @@ static inline void bn_mul_1_hlp(int i, bn_uint_t *s, bn_uint_t *d, bn_uint_t b)
 }
 
 /* Pen-and-paper multiplication [HAC 14.12] */
-static int bn_mul_1(BIGNUM *A, BIGNUM *B, BIGNUM *X)
+static int bn_mul1(BIGNUM *A, BIGNUM *B, BIGNUM *X)
 {
 	int ret = 0, i, j;
 
@@ -1130,7 +1130,7 @@ static int bn_mul_1(BIGNUM *A, BIGNUM *B, BIGNUM *X)
 	BN_CHECK(bn_from_udbl(X, 0));
 
 	for (i++; j >= 0; j--)
-		bn_mul_1_hlp(i, A->p, X->p + j, B->p[j]);
+		bn_mul1_hlp(i, A->p, X->p + j, B->p[j]);
 
 cleanup:
 
@@ -1165,7 +1165,7 @@ static int bn_mul_hlp(BIGNUM *A, BIGNUM *B, BIGNUM *X, int alen, int blen);
      O(n**log(3)) or O(n**1.584) elementary operations, making
 	 it asymptotically faster than the O(n**2) grade school 
 	algorithm. */
-static int bn_mul_2(BIGNUM *A, BIGNUM *B, BIGNUM *X)
+static int bn_mul2(BIGNUM *A, BIGNUM *B, BIGNUM *X)
 {
 	int ret = 0, alen, blen, a1, a0, b1, b0, R;
 	BIGNUM A1, A0, B1, B0, A1B1, A0B0, T;
@@ -1256,10 +1256,10 @@ static int bn_mul_hlp(BIGNUM *A, BIGNUM *B, BIGNUM *X, int alen, int blen)
 
 	if (alen >= i)
 		/* Use Karatsuba multiplication */
-		return bn_mul_2(A, B, X);
+		return bn_mul2(A, B, X);
 	else
 		/* Use gradeschool multiplication */
-		return bn_mul_1(A, B, X);
+		return bn_mul1(A, B, X);
 
 cleanup:
 
@@ -1280,7 +1280,7 @@ int bn_mul(BIGNUM *A, BIGNUM *B, BIGNUM *X)
 
 	/* In any case A->n + B->n limbs will always be enough to
 	   hold the result, but we keep two extra limbs to prevent
-	   a buffer overflow in bn_mul_1_hlp */
+	   a buffer overflow in bn_mul1_hlp */
 	if (A->n + B->n + 2 >= BN_MAX_LIMBS)
 		return BN_ERR_NOT_ENOUGH_LIMBS;
 
@@ -1756,8 +1756,8 @@ static void bn_montmul(BIGNUM *A, BIGNUM *B, BIGNUM *N, bn_uint_t mm, BIGNUM *T)
 		u0 = A->p[i];
 		u1 = (d[0] + u0 * B->p[0]) * mm;
 
-		bn_mul_1_hlp(m, B->p, d, u0);
-		bn_mul_1_hlp(n, N->p, d, u1);
+		bn_mul1_hlp(m, B->p, d, u0);
+		bn_mul1_hlp(n, N->p, d, u1);
 
 		*d++ = u0;
 		d[n + 1] = 0;
@@ -2293,7 +2293,7 @@ cleanup:
 }
 
 
-#if defined(BN_TESTS)
+#if defined(XR_BN_TESTS)
 #define TEST_MSG(v, fp, i, msg, res)                            \
 do {                                                            \
 	if (v)                                                      \
@@ -2464,4 +2464,4 @@ cleanup:
 }
 #else
 int bn_self_test(void *rng, int verbose, FILE *fp) { NOP; return 0; }
-#endif /* BN_TESTS */
+#endif /* XR_BN_TESTS */

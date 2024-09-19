@@ -2,6 +2,8 @@ CC := gcc
 CFLAGS := -Wpedantic -Wall -I./src/
 CXXFLAGS := -std=c11 -Wall
 
+XR_FLAGS := -DXR_DEBUG -DXR_BN_TESTS
+
 BIN_DIR := ./bin
 SRC_DIR := ./src
 LOG_DIR := ./logs
@@ -54,19 +56,19 @@ $(EXE): $(COMMON_OBJS) $(RAND_OBJS) $(CRYPTO_OBJS) $(JENT_OBJS) $(TEST_OBJS)
 	$(CC) $(COMMON_OBJS) $(RAND_OBJS) $(CRYPTO_OBJS) $(JENT_OBJS) $(DEPS) $(TEST_OBJS) -o $(EXE)
 
 $(BIN_DIR)/%.o: $(COMMON_PATH)/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(XR_FLAGS) -c $< -o $@
 
 $(BIN_DIR)/%.o: $(JENT_PATH)/%.c
-	$(CC) $(CFLAGS) $(JENT_FLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(XR_FLAGS) $(JENT_FLAGS) -c $< -o $@
 
 $(BIN_DIR)/%.o: $(CRYPTO_PATH)/%.c
-	$(CC) $(CFLAGS) $(CRYPTO_FLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(XR_FLAGS) $(CRYPTO_FLAGS) -c $< -o $@
 
 $(BIN_DIR)/%.o: $(RAND_PATH)/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(XR_FLAGS) -c $< -o $@
 
 $(BIN_DIR)/%.o: $(TEST_PATH)/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(XR_FLAGS) -c $< -o $@
 
 clean:
 	$(RM) $(COMMON_OBJS) $(RAND_OBJS) $(CRYPTO_OBJS) $(JENT_OBJS) $(TEST_OBJS)

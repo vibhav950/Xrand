@@ -42,11 +42,12 @@ inline void kill(void)
 
 jmp_buf ex_buf;
 
-EXCEPTION ex = {.err_code = -1,
-                   .err_fatal = -1,
-                   .err_mswec = -1,
-                   .err_line = -1
-                  };
+EXCEPTION ex = {
+    .err_code = -1,
+    .err_fatal = -1,
+    .err_mswec = -1,
+    .err_line = -1
+};
 
 const char *exception_message (ecode_t ecode)
 {
@@ -68,9 +69,9 @@ const char *exception_message (ecode_t ecode)
             return ("The disk could not be accessed.");
         case ERR_JENT_FAILURE:
             return ("Jitter RNG failure.");
-        case ERR_WINAPI:
+        case ERR_WIN32_WINAPI:
             return ("Win32 API failure (check logs for debug info).");
-        case ERR_CNG:
+        case ERR_WIN32_CNG:
             return ("Windows CNG failure (check logs for debug info).");
         case ERR_ENTROPY_TOO_LOW:
             return ("Insufficient system entropy");
@@ -92,7 +93,7 @@ void set_exception (ecode_t code, ecode_t fatal, ecode_t mswec, ecode_t line)
     longjmp(ex_buf, 1);
 }
 
-void handle_exception (ecode_t code, ecode_t fatal, ecode_t mswec, ecode_t line)
+void handle_exception (ecode_t code, ecode_t fatal, ecode_t mswec, ecode_t line, int verbose)
 {
     if (fatal)
     {
@@ -111,13 +112,20 @@ void handle_exception (ecode_t code, ecode_t fatal, ecode_t mswec, ecode_t line)
                     );
             fclose(_fpLog);
         }
-        fprintf(stderr, "\x1B[91m[FATAL 0x%X]\x1B[0m Aborting due to previous error.\n", code);
 #endif
+        if (verbose)
+        {
+            fflush(NULL);
+            fprintf(stderr, "\x1B[91m[FATAL 0x%X]\x1B[0m Aborting due to previous error.\n", code);
+            fflush(stderr);
+        }
         kill();
     }
-    else
+    else if (verbose)
     {
+        fflush(NULL);
         fprintf(stderr, "\n\x1B[33m[ERR 0x%X]\x1B[0m %s\n", code, exception_message(code));
+        fflush(stderr);
     }
 }
 
@@ -129,7 +137,7 @@ void clear_exception (EXCEPTION *pex)
     pex->err_line = -1;
 }
 
-void dump_log (ecode_t code, ecode_t fatal, ecode_t mswec, ecode_t line)
+void dump_log (ecode_t code, ecode_t fatal, ecode_t mswec, ecode_t line, int verbose)
 {
 #if !defined(XR_NO_CRASH_DUMP)
     time_t _t = time(NULL);
@@ -146,12 +154,16 @@ void dump_log (ecode_t code, ecode_t fatal, ecode_t mswec, ecode_t line)
                 );
         fclose(_fpLog);
     }
-    fprintf(stderr, "\n\x1B[33m[ERR 0x%X]\x1B[0m %s\n", code, exception_message(code));
 #endif
+    if (verbose)
+    {
+        fflush(NULL);
+        fprintf(stderr, "\n\x1B[33m[ERR 0x%X]\x1B[0m %s\n", code, exception_message(code));
+        fflush(stderr);
+    }
 }
 
-void warn (char *warning, int warntype, int verbose)
+void warn (char *warning, int warntype)
 {
-    if (verbose)
-        fprintf(stderr, "\n\x1B[33m[WARN]\x1B[0m %s\n", warning);
+    fprintf(stderr, "\n\x1B[33m[WARN]\x1B[0m %s\n", warning);
 }

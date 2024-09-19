@@ -32,9 +32,6 @@ extern "C" {
 #error "OpenSSL not found"
 #endif
 
-/* Set this to true to enable debug mode */
-#define RNG_MODE_DEBUG 1
-
 /* RNG basic macros */
 #define RNG_POOL_SIZE 384
 
