@@ -27,7 +27,7 @@
 
 /* Calculate the CRC-32 checksum of the given string 
    using the above table. */
-inline uint32_t crc32(const uint8_t *str, size_t len)
+uint32_t crc32(const uint8_t *str, size_t len)
 {
     uint32_t crc;
 

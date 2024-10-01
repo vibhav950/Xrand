@@ -25,7 +25,7 @@
    Note: Every BIGNUM variable MUST be initialized before 
    any memory is allocated for it, or before it is passed
    to any of the bn_* functions */
-inline void bn_init(BIGNUM *X, ...)
+void bn_init(BIGNUM *X, ...)
 {
 	va_list args;
 
@@ -456,7 +456,7 @@ cleanup:
 
 
 /* Set the least significant bit of X */
-inline void bn_set_lsb(BIGNUM *X)
+void bn_set_lsb(BIGNUM *X)
 {
 	BN_REQUIRE(X, "X is null");
 	BN_REQUIRE(X->n > 0, "X is empty");
@@ -466,7 +466,7 @@ inline void bn_set_lsb(BIGNUM *X)
 
 
 /* Set the most significant bit of X */
-inline void bn_set_msb(BIGNUM *X)
+void bn_set_msb(BIGNUM *X)
 {
 	BN_REQUIRE(X, "X is null");
 	BN_REQUIRE(X->n > 0, "X is empty");
@@ -476,7 +476,7 @@ inline void bn_set_msb(BIGNUM *X)
 
 
 /* Get the n-th bit of X */
-inline int bn_get_bit(BIGNUM *X, size_t n)
+int bn_get_bit(BIGNUM *X, size_t n)
 {
 	BN_REQUIRE(X, "X is null");
 
@@ -515,7 +515,7 @@ cleanup:
 
 
 /* Returns the number of bits in X */
-inline int bn_msb(const BIGNUM *X)
+int bn_msb(const BIGNUM *X)
 {
 	BN_REQUIRE(X, "X is null");
 
@@ -551,7 +551,7 @@ inline int bn_msb(const BIGNUM *X)
 
 
 /* Returns the number of least significant trailing zeros in X */
-inline int bn_lsb(const BIGNUM *X)
+int bn_lsb(const BIGNUM *X)
 {
 	BN_REQUIRE(X, "X is null");
 
@@ -584,7 +584,7 @@ inline int bn_lsb(const BIGNUM *X)
 
 
 /* Returns 1 if X is even, 0 otherwise */
-inline int bn_is_even(const BIGNUM *X)
+int bn_is_even(const BIGNUM *X)
 {
 	BN_REQUIRE(X, "X is null");
 	BN_REQUIRE(X->n > 0, "X is empty");
@@ -594,7 +594,7 @@ inline int bn_is_even(const BIGNUM *X)
 
 
 /* Returns 1 if X is odd, 0 otherwise */
-inline int bn_is_odd(const BIGNUM *X)
+int bn_is_odd(const BIGNUM *X)
 {
 	BN_REQUIRE(X, "X is null");
 	BN_REQUIRE(X->n > 0, "X is empty");
@@ -604,7 +604,7 @@ inline int bn_is_odd(const BIGNUM *X)
 
 
 /* Returns 1 if X is positive, 0 otherwise */
-inline int bn_is_pos(const BIGNUM *X)
+int bn_is_pos(const BIGNUM *X)
 {
 	BN_REQUIRE(X, "X is null");
 	
@@ -613,7 +613,7 @@ inline int bn_is_pos(const BIGNUM *X)
 
 
 /* Returns 1 if X is negative, 0 otherwise */
-inline int bn_is_neg(const BIGNUM *X)
+int bn_is_neg(const BIGNUM *X)
 {
 	BN_REQUIRE(X, "X is null");
 	

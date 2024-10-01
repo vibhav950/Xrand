@@ -148,7 +148,7 @@ int rdseed_check_support(void)
  *
  * Returns 1 on success, 0 on underflow.
  */
-inline int rdrand16_step(unsigned short int *therand)
+int rdrand16_step(unsigned short int *therand)
 {
     unsigned short int val;
     int cf_error_status;
@@ -162,7 +162,7 @@ inline int rdrand16_step(unsigned short int *therand)
     return cf_error_status;
 }
 
-inline int rdseed16_step(unsigned short int *therand)
+int rdseed16_step(unsigned short int *therand)
 {
     unsigned short int val;
     int cf_error_status;
@@ -182,7 +182,7 @@ inline int rdseed16_step(unsigned short int *therand)
  *
  * Returns 1 on success, 0 on underflow.
  */
-inline int rdrand32_step(unsigned int *therand)
+int rdrand32_step(unsigned int *therand)
 {
     int val;
     int cf_error_status;
@@ -196,7 +196,7 @@ inline int rdrand32_step(unsigned int *therand)
     return cf_error_status;
 }
 
-inline int rdseed32_step(unsigned int *therand)
+int rdseed32_step(unsigned int *therand)
 {
     int val;
     int cf_error_status;
@@ -216,7 +216,7 @@ inline int rdseed32_step(unsigned int *therand)
  *
  * Returns 1 on success, 0 on underflow.
  */
-inline int rdrand64_step(unsigned long long int *therand)
+int rdrand64_step(unsigned long long int *therand)
 {
     unsigned long long int val;
     int cf_error_status;
@@ -230,7 +230,7 @@ inline int rdrand64_step(unsigned long long int *therand)
     return cf_error_status;
 }
 
-inline int rdseed64_step(unsigned long long int *therand)
+int rdseed64_step(unsigned long long int *therand)
 {
     unsigned long long int val;
     int cf_error_status;

@@ -31,11 +31,104 @@ int check_rdseed();
 int rdrand_check_support();
 int rdseed_check_support();
 
-int rdrand16_step(unsigned short int *therand);
-int rdseed16_step(unsigned short int *therand);
+/**
+ * Get 16-bit random number with RDRAND
+ * and write the value to *therand.
+ *
+ * Returns 1 on success, 0 on underflow.
+ */
+extern inline int __attribute__( ( always_inline ) ) rdrand16_step(unsigned short int *therand)
+{
+    unsigned short int val;
+    int cf_error_status;
+    asm volatile("\n\
+        rdrand %%ax;\n\
+        mov $1,%%edx;\n\
+        cmovae %%ax,%%dx;\n\
+        mov %%edx,%1;\n\
+        mov %%ax, %0;" : "=r"(val), "=r"(cf_error_status)::"%ax", "%dx");
+    *therand = val;
+    return cf_error_status;
+}
 
-int rdrand32_step(unsigned int *therand);
-int rdseed32_step(unsigned int *therand);
+extern inline int __attribute__( ( always_inline ) ) rdseed16_step(unsigned short int *therand)
+{
+    unsigned short int val;
+    int cf_error_status;
+    asm volatile("\n\
+        rdseed %%ax;\n\
+        mov $1,%%edx;\n\
+        cmovae %%ax,%%dx;\n\
+        mov %%edx,%1;\n\
+        mov %%ax, %0;" : "=r"(val), "=r"(cf_error_status)::"%ax", "%dx");
+    *therand = val;
+    return cf_error_status;
+}
 
-int rdrand64_step(unsigned long long int *therand);
-int rdseed64_step(unsigned long long int *therand);
+/**
+ * Get 32-bit random number with RDRAND
+ * and write the value to *therand.
+ *
+ * Returns 1 on success, 0 on underflow.
+ */
+extern inline int __attribute__( ( always_inline ) ) rdrand32_step(unsigned int *therand)
+{
+    int val;
+    int cf_error_status;
+    asm volatile("\n\
+        rdrand %%eax;\n\
+        mov $1,%%edx;\n\
+        cmovae %%eax,%%edx;\n\
+        mov %%edx,%1;\n\
+        mov %%eax,%0;" : "=r"(val), "=r"(cf_error_status)::"%eax", "%edx");
+    *therand = val;
+    return cf_error_status;
+}
+
+extern inline int __attribute__( ( always_inline ) ) rdseed32_step(unsigned int *therand)
+{
+    int val;
+    int cf_error_status;
+    asm volatile("\n\
+        rdseed %%eax;\n\
+        mov $1,%%edx;\n\
+        cmovae %%eax,%%edx;\n\
+        mov %%edx,%1;\n\
+        mov %%eax,%0;" : "=r"(val), "=r"(cf_error_status)::"%eax", "%edx");
+    *therand = val;
+    return cf_error_status;
+}
+
+/**
+ * Get 64-bit random number using RDRAND
+ * and write the value to *therand.
+ *
+ * Returns 1 on success, 0 on underflow.
+ */
+extern inline int __attribute__( ( always_inline ) ) rdrand64_step(unsigned long long int *therand)
+{
+    unsigned long long int val;
+    int cf_error_status;
+    asm volatile("\n\
+        rdrand %%rax;\n\
+        mov $1,%%edx;\n\
+        cmovae %%rax,%%rdx;\n\
+        mov %%edx,%1;\n\
+        mov %%rax, %0;" : "=r"(val), "=r"(cf_error_status)::"%rax", "%rdx");
+    *therand = val;
+    return cf_error_status;
+}
+
+extern inline int __attribute__( ( always_inline ) ) rdseed64_step(unsigned long long int *therand)
+{
+    unsigned long long int val;
+    int cf_error_status;
+    asm volatile("\n\
+        rdseed %%rax;\n\
+        mov $1,%%edx;\n\
+        cmovae %%rax,%%rdx;\n\
+        mov %%edx,%1;\n\
+        mov %%rax, %0;" : "=r"(val), "=r"(cf_error_status)::"%rax", "%rdx");
+    *therand = val;
+    return cf_error_status;
+}

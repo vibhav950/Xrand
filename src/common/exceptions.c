@@ -26,7 +26,7 @@
     #pragma intrinsic(__fastfail)
 #endif
 
-inline void kill(void)
+__attribute__( ( noreturn ) ) void kill(void)
 {
 #if defined(__GNUC__) && __has_builtin(__builtin_trap)
     // GCC / LLVM (Clang)
@@ -37,6 +37,9 @@ inline void kill(void)
 #else
     // Hacky way to trigger a segfault
     *(char *)0 = 0;
+#endif
+#if __has_builtin(__builtin_unreachable)
+    __builtin_unreachable();
 #endif
 }
 

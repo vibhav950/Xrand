@@ -1,6 +1,6 @@
 CC := gcc
-CFLAGS := -Wpedantic -Wall -I./src/
-CXXFLAGS := -std=c11 -Wall
+CFLAGS := -std=gnu17 -fgnu89-inline -Wpedantic -Wall -I./src/
+CXXFLAGS := -std=gnu++17 -Wall
 
 XR_FLAGS := -DXR_DEBUG -DXR_BN_TESTS
 
