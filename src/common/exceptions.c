@@ -166,6 +166,12 @@ void dump_log (ecode_t code, ecode_t fatal, ecode_t mswec, ecode_t line, int ver
     }
 }
 
+void assert_expr (char *file, int line)
+{
+    fprintf(stderr, "\n\x1B[33m[ERR 0x%X]\x1B[0m Assertion failed at %s: %d\n", 0xE2, file, line);
+    kill();
+}
+
 void warn (char *warning, int warntype)
 {
     fprintf(stderr, "\n\x1B[33m[WARN]\x1B[0m %s\n", warning);

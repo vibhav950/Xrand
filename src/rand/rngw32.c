@@ -17,7 +17,6 @@
 
 #include "rngw32.h"
 #include "rdrand.h"
-#include "common/exceptions.h"
 #include "jitterentropy/jitterentropy.h"
 #include "crypto/crc.h"
 
@@ -1332,6 +1331,12 @@ cleanup:
 bool RngStart(void)
 {
     return RandPoolInit();
+}
+
+/* Add randomness using user events (keystrokes and mouse movement) */
+void RngEnableUserEvents(void)
+{
+    bUserEventsEnabled = true;
 }
 
 /* Returns 1 if the RNG is currently active, 0 otherwise. */

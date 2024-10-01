@@ -65,6 +65,7 @@ LRESULT CALLBACK KeyboardProc (int nCode, WPARAM wParam, LPARAM lParam);
 static unsigned __stdcall FastPollThreadProc (void *_dummy);
 
 bool RngStart (void);
+void RngEnableUserEvents (void);
 void RngStop (void);
 bool DidRngStart (void);
 bool DidRngSlowPoll(void);

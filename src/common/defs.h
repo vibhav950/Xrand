@@ -18,6 +18,8 @@
 #ifndef DEFS_H
 #define DEFS_H
 
+#include "exceptions.h"
+
 #define XRAND_VERSION "1.0.1"
 
 #ifdef _WIN32
@@ -79,7 +81,7 @@ typedef enum {
     SUCCESS
 } status_t;
 
-#define ASSERT(_stmt) do { if (SUCCESS != (_stmt)) exit(1); } while(0)
+#define ASSERT(stmt) Assert(stmt)
 
 #define NOP do { } while(0)
 

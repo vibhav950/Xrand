@@ -82,6 +82,7 @@ extern void set_exception(ecode_t, ecode_t, ecode_t, ecode_t);
 extern void handle_exception(ecode_t, ecode_t, ecode_t, ecode_t, int);
 extern void clear_exception(EXCEPTION *);
 extern void dump_log(ecode_t, ecode_t, ecode_t, ecode_t, int);
+extern void assert_expr(char *, int);
 extern void warn(char *, int);
 
 #define TRY if (setjmp(ex_buf) == 0)
@@ -128,5 +129,11 @@ extern void warn(char *, int);
 #define Warn(warning, warntype) \
     {}
 #endif
+
+#define Assert(stmt)                         \
+    do {                                     \
+        if (!(stmt))                         \
+            assert_expr(__FILE__, __LINE__); \
+    } while (0)
 
 #endif /* EXCEPTIONS_H */
