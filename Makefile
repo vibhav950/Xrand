@@ -39,12 +39,13 @@ RAND_PATH := $(SRC_DIR)/rand
 RAND_SRCS := $(RAND_PATH)/rdrand.c \
 			 $(RAND_PATH)/rngw32.c \
 			 $(RAND_PATH)/ctr_drbg.c \
+			 $(RAND_PATH)/hash_drbg.c \
 			 $(RAND_PATH)/trivium.c \
 			 $(RAND_PATH)/random.c
 RAND_OBJS := $(addprefix $(BIN_DIR)/, $(notdir $(RAND_SRCS:.c=.o)))
 
 TEST_PATH := test
-TEST_SRCS := $(TEST_PATH)/test.c
+TEST_SRCS := $(TEST_PATH)/ent.c
 TEST_OBJS := $(addprefix $(BIN_DIR)/, $(notdir $(TEST_SRCS:.c=.o)))
 
 EXE := $(BIN_DIR)/xrand-test
