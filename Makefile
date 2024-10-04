@@ -2,7 +2,7 @@ CC := gcc
 CFLAGS := -std=gnu17 -fgnu89-inline -Wpedantic -Wall -I./src/
 CXXFLAGS := -std=gnu++17 -Wall
 
-XR_FLAGS := -DXR_DEBUG -DXR_BN_TESTS
+XR_FLAGS := -DXR_DEBUG -DXR_BN_TESTS -DXR_CTR_DRBG_TESTS -DXR_HASH_DRBG_TESTS
 
 BIN_DIR := ./bin
 SRC_DIR := ./src

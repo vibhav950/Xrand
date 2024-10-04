@@ -54,12 +54,11 @@ static inline void KEY_256_ASSIST_2(__m128i *temp1, __m128i *temp3)
 void aes256_expand_key(const aes256_key_t *key,
                        aes256_ks_t *ks)
 {
-    uint8_t *k = (uint8_t*)key;
-    __m128i *rk = (__m128i*)ks;
+    const uint8_t *k = (const uint8_t *)key->k;
     __m128i temp1, temp2, temp3;
-    __m128i *Key_Schedule = (__m128i *)rk;
-    temp1 = _mm_loadu_si128((__m128i *)k);
-    temp3 = _mm_loadu_si128((__m128i *)(k + 16));
+    __m128i *Key_Schedule = (__m128i *)ks->rk;
+    temp1 = _mm_loadu_si128((const __m128i *)k);
+    temp3 = _mm_loadu_si128((const __m128i *)(k + 16));
     Key_Schedule[0] = temp1;
     Key_Schedule[1] = temp3;
     temp2 = _mm_aeskeygenassist_si128(temp3, 0x01);
@@ -110,16 +109,16 @@ void aes256_encr_block(const uint8_t *pt,
                        uint8_t *ct,
                        const aes256_ks_t *ks)
 {
-    __m128i *rk = (__m128i*)ks;
+    const __m128i *rk = (const __m128i*)ks->rk;
     __m128i tmp;
-    int i;
-    tmp = LOAD128((__m128i *)pt);
-    tmp = XOR128(tmp, ((__m128i *)rk)[0]);
+    uint32_t i;
+    tmp = LOAD128((const __m128i *)pt);
+    tmp = XOR128(tmp, rk[0]);
     for (i = 1; i < AES256_ROUNDS; i++)
     {
-        tmp = AESENC(tmp, ((__m128i *)rk)[i]);
+        tmp = AESENC(tmp, rk[i]);
     }
-    tmp = AESENCLAST(tmp, ((__m128i *)rk)[i]);
+    tmp = AESENCLAST(tmp, rk[i]);
     STORE128((__m128i *)ct, tmp);
     ZEROALL256();
 }

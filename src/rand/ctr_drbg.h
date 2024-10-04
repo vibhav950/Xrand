@@ -55,7 +55,7 @@ typedef struct _CTR_DRBG_STATE {
     /* 256-bit AES key */
     aes256_key_t K;
     /* Reseed counter */
-    uint64_t counter;
+    uint64_t reseed_counter;
     /* Flags */
     uint8_t flags;
 } CTR_DRBG_STATE;
@@ -70,7 +70,9 @@ typedef struct _CTR_DRBG_STATE {
  *                                      consuming application. Can be null.
  *  @param personalization_str_len      The length of @p personalization_str
  *                                      in bytes.
- *  @return  A @p status_t status code.
+ *
+ *  @return  FAILURE if @p personalization_str_len > CTR_DRBG_ENTROPY_LEN.
+ *  @return  SUCCESS otherwise.
  */
 status_t ctr_drbg_init(CTR_DRBG_STATE *state,
                        const uint8_t entropy[CTR_DRBG_ENTROPY_LEN],
@@ -87,7 +89,8 @@ status_t ctr_drbg_init(CTR_DRBG_STATE *state,
  *                                      Can be null.
  *  @param data_len                     The length of @p provided_data in bytes.
  * 
- *  @return  A @p status_t status code.
+ *  @return  FAILURE if @p data_len > CTR_DRBG_ENTROPY_LEN.
+ *  @return  SUCCESS otherwise.
  */
 status_t ctr_drbg_update(CTR_DRBG_STATE *state,
                          const uint8_t *provided_data,
@@ -104,7 +107,8 @@ status_t ctr_drbg_update(CTR_DRBG_STATE *state,
  *  @param additional_input_len         The length of @p additional_input
  *                                      in bytes.
  * 
- *  @return  A @p status_t status code.
+ *  @return  FAILURE if @p additional_input_len > CTR_DRBG_ENTROPY_LEN.
+ *  @return  SUCCESS otherwise.
  */
 status_t ctr_drbg_reseed(CTR_DRBG_STATE *state,
                          const uint8_t entropy[CTR_DRBG_ENTROPY_LEN],
@@ -125,7 +129,10 @@ status_t ctr_drbg_reseed(CTR_DRBG_STATE *state,
  *  @param additional_input_len         The length of @p additional_input
  *                                      in bytes.
  * 
- *  @return  A @p status_t status code.
+ *  @return  FAILURE if @p out_len > CTR_DRBG_MAX_OUT_LEN.
+ *  @return  FAILURE if @p additional_input_len > CTR_DRBG_ENTROPY_LEN.
+ *  @return  FAILURE if the CTR_DRBG needs reseed.
+ *  @return  SUCCESS otherwise.
  */
 status_t ctr_drbg_generate(CTR_DRBG_STATE *state,
                            uint8_t *out,
