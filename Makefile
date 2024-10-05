@@ -2,7 +2,7 @@ CC := gcc
 CFLAGS := -std=gnu17 -fgnu89-inline -Wpedantic -Wall -I./src/
 CXXFLAGS := -std=gnu++17 -Wall
 
-XR_FLAGS := -DXR_DEBUG -DXR_BN_TESTS -DXR_CTR_DRBG_TESTS -DXR_HASH_DRBG_TESTS
+XR_FLAGS := -DXR_DEBUG -DXR_BN_TESTS -DXR_CTR_DRBG_TESTS -DXR_HASH_DRBG_TESTS -DXR_HMAC_DRBG_TESTS
 
 BIN_DIR := ./bin
 SRC_DIR := ./src
@@ -40,6 +40,7 @@ RAND_SRCS := $(RAND_PATH)/rdrand.c \
 			 $(RAND_PATH)/rngw32.c \
 			 $(RAND_PATH)/ctr_drbg.c \
 			 $(RAND_PATH)/hash_drbg.c \
+			 $(RAND_PATH)/hmac_drbg.c \
 			 $(RAND_PATH)/trivium.c \
 			 $(RAND_PATH)/random.c
 RAND_OBJS := $(addprefix $(BIN_DIR)/, $(notdir $(RAND_SRCS:.c=.o)))
