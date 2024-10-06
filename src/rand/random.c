@@ -17,12 +17,13 @@
 
 #include "random.h"
 #include "common/defs.h"
-#include "common/ieee754_format.h"
 #include "common/exceptions.h"
+#include "common/ieee754_format.h"
 #include "trivium.h"
 #include <inttypes.h>
-#include <string.h>
 #include <math.h>
+#include <string.h>
+
 
 #define _PI 3.141592653589793
 
@@ -33,55 +34,49 @@
 #define _cos(x) cos(x)
 #define _pow(x, y) pow(x, y)
 
-static inline uint64_t ranged(uint64_t a, uint64_t b)
-{
-    if (a > b)
-    {
-        return -1;
-    }
+static inline uint64_t ranged(uint64_t a, uint64_t b) {
+  if (a > b) {
+    return -1;
+  }
 
-    return a + TriviumRand64() % ((b - a) + 1);
+  return a + TriviumRand64() % ((b - a) + 1);
 }
 
-static inline double uni(void)
-{
-    ieee754_double_t temp;
+static inline double uni(void) {
+  ieee754_double_t temp;
 
-    /* Request 64-bit random value from the PRNG */
-    u64 rand = TriviumRand64();
+  /* Request 64-bit random value from the PRNG */
+  u64 rand = TriviumRand64();
 
-    /**
-     * Construct a 64-bit positive floating point number in [0.0, 1.0)
-     * by distributing the random bits over the 52-bit mantissa.
-     */
-    temp.fmt.sign = 0;
-    temp.fmt.exponent = IEEE754_DOUBLE_PREC_BIAS; /* Exponent bias */
-    temp.fmt.mantissa0 = ((rand & 0xFFF) << 8) | (rand >> 56);
-    temp.fmt.mantissa1 = ((rand >> 12) & 0xFFFFFFFF) ^ ((rand >> 44) & 0xFF);
+  /**
+   * Construct a 64-bit positive floating point number in [0.0, 1.0)
+   * by distributing the random bits over the 52-bit mantissa.
+   */
+  temp.fmt.sign = 0;
+  temp.fmt.exponent = IEEE754_DOUBLE_PREC_BIAS; /* Exponent bias */
+  temp.fmt.mantissa0 = ((rand & 0xFFF) << 8) | (rand >> 56);
+  temp.fmt.mantissa1 = ((rand >> 12) & 0xFFFFFFFF) ^ ((rand >> 44) & 0xFF);
 
-    return temp.d - 1.0;
+  return temp.d - 1.0;
 }
 
 /**
  * Uniform distribution
  * Get random numbers uniformly distributed over the range [a, b]
  */
-void uniform(FILE *fp, double a, double b, int iter)
-{
-    if (fp == NULL)
-    {
-        fp = stdout;
-    }
+void uniform(FILE *fp, double a, double b, int iter) {
+  if (fp == NULL) {
+    fp = stdout;
+  }
 
-    double temp, x;
+  double temp, x;
 
-    for (int i = 0; i < iter; ++i)
-    {
-        temp = uni();
-        x = a + (b - a) * temp;
+  for (int i = 0; i < iter; ++i) {
+    temp = uni();
+    x = a + (b - a) * temp;
 
-        fprintf(fp, "%.lf\n", x);
-    }
+    fprintf(fp, "%.lf\n", x);
+  }
 }
 
 /**
@@ -104,45 +99,37 @@ void uniform(FILE *fp, double a, double b, int iter)
  *
  * (source: https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform)
  */
-void normal(FILE *fp, double mu, double sigma, int iter)
-{
-    if (sigma < 0)
-    {
-        Warn("normal : invalid arguments (expected sigma >= 0)",
-             WARN_INVALID_ARGS);
-        return;
+void normal(FILE *fp, double mu, double sigma, int iter) {
+  if (sigma < 0) {
+    Warn("normal : invalid arguments (expected sigma >= 0)", WARN_INVALID_ARGS);
+    return;
+  }
+
+  if (fp == NULL) {
+    fp = stdout;
+  }
+
+  double u1, u2, x, y;
+  double *next = NULL;
+
+  for (int i = 0; i < iter; ++i) {
+    /* Generate two uniform variates uniformly distributed over [0.0, 1.0) */
+    u1 = uni();
+    u2 = uni();
+    /* Generate independent normal variates x and y from N(mu, sigma) */
+    x = (_sqrt(-2 * _log(u1)) * _cos(2 * _PI * u2)) * sigma + mu;
+    y = (_sqrt(-2 * _log(u1)) * _sin(2 * _PI * u2)) * sigma + mu;
+
+    if (next == NULL) {
+      next = &y;
+    } else {
+      fprintf(fp, "%lf\n", y);
+      next = NULL;
+      continue;
     }
 
-    if (fp == NULL)
-    {
-        fp = stdout;
-    }
-
-    double u1, u2, x, y;
-    double *next = NULL;
-
-    for (int i = 0; i < iter; ++i)
-    {
-        /* Generate two uniform variates uniformly distributed over [0.0, 1.0) */
-        u1 = uni();
-        u2 = uni();
-        /* Generate independent normal variates x and y from N(mu, sigma) */
-        x = (_sqrt(-2 * _log(u1)) * _cos(2 * _PI * u2)) * sigma + mu;
-        y = (_sqrt(-2 * _log(u1)) * _sin(2 * _PI * u2)) * sigma + mu;
-
-        if (next == NULL)
-        {
-            next = &y;
-        }
-        else
-        {
-            fprintf(fp, "%lf\n", y);
-            next = NULL;
-            continue;
-        }
-
-        fprintf(fp, "%lf\n", x);
-    }
+    fprintf(fp, "%lf\n", x);
+  }
 }
 
 /**
@@ -162,52 +149,41 @@ void normal(FILE *fp, double mu, double sigma, int iter)
  *
  * (source: https://en.wikipedia.org/wiki/Triangular_distribution)
  */
-void triangular(FILE *fp, double a, double b, double c, int iter)
-{
-    if (!(a < b && a <= c && c <= b))
-    {
-        Warn("triangular : invalid arguments (expected a < b, a <= c <= b)",
-             WARN_INVALID_ARGS);
+void triangular(FILE *fp, double a, double b, double c, int iter) {
+  if (!(a < b && a <= c && c <= b)) {
+    Warn("triangular : invalid arguments (expected a < b, a <= c <= b)",
+         WARN_INVALID_ARGS);
 
-        return;
+    return;
+  }
+
+  if (fp == NULL) {
+    fp = stdout;
+  }
+
+  double U, F, X;
+
+  if (b - a) {
+    F = (c - a) / (b - a);
+
+    for (int i = 0; i < iter; ++i) {
+      U = uni();
+
+      if (U < F) {
+        X = a + _sqrt(U * (b - a) * (c - a));
+      } else {
+        X = b - _sqrt((1.0 - U) * (b - a) * (b - c));
+      }
+
+      fprintf(fp, "%lf\n", X);
     }
+  } else {
+    X = a;
 
-    if (fp == NULL)
-    {
-        fp = stdout;
+    for (int i = 0; i < iter; ++i) {
+      fprintf(fp, "%lf\n", X);
     }
-
-    double U, F, X;
-
-    if (b - a)
-    {
-        F = (c - a) / (b - a);
-
-        for (int i = 0; i < iter; ++i)
-        {
-            U = uni();
-
-            if (U < F)
-            {
-                X = a + _sqrt(U * (b - a) * (c - a));
-            }
-            else
-            {
-                X = b - _sqrt((1.0 - U) * (b - a) * (b - c));
-            }
-
-            fprintf(fp, "%lf\n", X);
-        }
-    }
-    else
-    {
-        X = a;
-
-        for (int i = 0; i < iter; ++i)
-        {
-            fprintf(fp, "%lf\n", X);
-        }
-    }
+  }
 }
 
 /**
@@ -225,39 +201,34 @@ void triangular(FILE *fp, double a, double b, double c, int iter)
  * Journal of the Royal Statistical Society. Series C (Applied Statistics),
  * 40(1), 143–158. https://doi.org/10.2307/2347913
  */
-void poisson(FILE *fp, double lambda, int iter)
-{
-    if (lambda < 0)
-    {
-        Warn("poisson : invalid arguments (expected lambda > 0)",
-             WARN_INVALID_ARGS);
-        return;
+void poisson(FILE *fp, double lambda, int iter) {
+  if (lambda < 0) {
+    Warn("poisson : invalid arguments (expected lambda > 0)",
+         WARN_INVALID_ARGS);
+    return;
+  }
+
+  if (fp == NULL) {
+    fp = stdout;
+  }
+
+  double u, F;
+  double p = _exp(-lambda);
+  int x;
+
+  for (int i = 0; i < iter; ++i) {
+    F = p;
+    u = uni();
+    x = 0;
+
+    while (u > F) {
+      x = x + 1;
+      p = (lambda * p) / x;
+      F = F + p;
     }
 
-    if (fp == NULL)
-    {
-        fp = stdout;
-    }
-
-    double u, F;
-    double p = _exp(-lambda);
-    int x;
-
-    for (int i = 0; i < iter; ++i)
-    {
-        F = p;
-        u = uni();
-        x = 0;
-
-        while (u > F)
-        {
-            x = x + 1;
-            p = (lambda * p) / x;
-            F = F + p;
-        }
-
-        fprintf(fp, "%d\n", x);
-    }
+    fprintf(fp, "%d\n", x);
+  }
 }
 
 /**
@@ -274,50 +245,41 @@ void poisson(FILE *fp, double lambda, int iter)
  * variate generation. Commun. ACM 31, 2 (Feb. 1988), 216–222.
  * https://doi.org/10.1145/42372.42381
  */
-void binomial(FILE *fp, int n, double p, int iter)
-{
-    if (!(n > 0 && 0 <= p && p <= 1))
-    {
-        Warn("binomial : invalid arguments (expected n > 0, 0 <= p <= 1)",
-             WARN_INVALID_ARGS);
-        return;
+void binomial(FILE *fp, int n, double p, int iter) {
+  if (!(n > 0 && 0 <= p && p <= 1)) {
+    Warn("binomial : invalid arguments (expected n > 0, 0 <= p <= 1)",
+         WARN_INVALID_ARGS);
+    return;
+  }
+
+  if (fp == NULL) {
+    fp = stdout;
+  }
+
+  if (p == 1) {
+    for (int i = 0; i < iter; ++i) {
+      fprintf(fp, "%d\n", n);
     }
+  } else {
+    double u, a, r;
+    double s = p / (1 - p);
+    int x;
 
-    if (fp == NULL)
-    {
-        fp = stdout;
+    for (int i = 0; i < iter; ++i) {
+      a = (n + 1) * s;
+      r = _pow((1 - p), n);
+      u = uni();
+      x = 0;
+
+      while (u > r) {
+        u = u - r;
+        x = x + 1;
+        r = ((a / x) - s) * r;
+      }
+
+      fprintf(fp, "%d\n", x);
     }
-
-    if (p == 1)
-    {
-        for (int i = 0; i < iter; ++i)
-        {
-            fprintf(fp, "%d\n", n);
-        }
-    }
-    else
-    {
-        double u, a, r;
-        double s = p / (1 - p);
-        int x;
-
-        for (int i = 0; i < iter; ++i)
-        {
-            a = (n + 1) * s;
-            r = _pow((1 - p), n);
-            u = uni();
-            x = 0;
-
-            while (u > r)
-            {
-                u = u - r;
-                x = x + 1;
-                r = ((a / x) - s) * r;
-            }
-
-            fprintf(fp, "%d\n", x);
-        }
-    }
+  }
 }
 
 /**
@@ -331,44 +293,38 @@ void binomial(FILE *fp, int n, double p, int iter)
  * nc - numeric characters
  * sc - special characters
  */
-void randstr(FILE *fp, char lc, char uc, char nc, char sc, int len, int iter)
-{
-    if (len > 1000)
-    {
-        Warn("randstr : invalid arguments (expected len <= 1000)",
-             WARN_INVALID_ARGS);
-        return;
+void randstr(FILE *fp, char lc, char uc, char nc, char sc, int len, int iter) {
+  if (len > 1000) {
+    Warn("randstr : invalid arguments (expected len <= 1000)",
+         WARN_INVALID_ARGS);
+    return;
+  }
+
+  if (fp == NULL) {
+    fp = stdout;
+  }
+
+  if (!lc && !uc && !nc && !sc) {
+    Warn("randstr : invalid arguments (expected non-empty charset)",
+         WARN_INVALID_ARGS);
+    return;
+  }
+
+  char charset[92];
+
+  if (lc)
+    strcat(charset, "abcdefghijklmnopqrstuvwxyz");
+  if (uc)
+    strcat(charset, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+  if (nc)
+    strcat(charset, "0123456789");
+  if (sc)
+    strcat(charset, "!@#$%^&*()_+-=[]{}|;:,.<>?\\");
+
+  for (int i = 0; i < iter; ++i) {
+    for (int ch = 0; ch < len; ++ch) {
+      fprintf(fp, "%c", charset[TriviumRand8() % strlen(charset)]);
     }
-
-    if (fp == NULL)
-    {
-        fp = stdout;
-    }
-
-    if (!lc && !uc && !nc && !sc)
-    {
-        Warn("randstr : invalid arguments (expected non-empty charset)",
-             WARN_INVALID_ARGS);
-        return;
-    }
-
-    char charset[92];
-
-    if (lc)
-        strcat(charset, "abcdefghijklmnopqrstuvwxyz");
-    if (uc)
-        strcat(charset, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-    if (nc)
-        strcat(charset, "0123456789");
-    if (sc)
-        strcat(charset, "!@#$%^&*()_+-=[]{}|;:,.<>?\\");
-
-    for (int i = 0; i < iter; ++i)
-    {
-        for (int ch = 0; ch < len; ++ch)
-        {
-            fprintf(fp, "%c", charset[TriviumRand8() % strlen(charset)]);
-        }
-        fprintf(fp, "\n");
-    }
+    fprintf(fp, "\n");
+  }
 }

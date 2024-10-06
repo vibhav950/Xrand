@@ -32,22 +32,22 @@
 extern void kill(void);
 
 /* ERROR codes */
-#define ERR_SUCCESS                 0x00
-#define ERR_DEPRECATED              0x01
-#define ERR_NO_MEMORY               0x02
-#define ERR_RAND_INIT               0x03
-#define ERR_REQUEST_TOO_LARGE       0x06
-#define ERR_INVALID_POOL_SIZE       0x07
-#define ERR_CANNOT_ACCESS_DISK      0x09
-#define ERR_JENT_FAILURE            0x0A
+#define ERR_SUCCESS 0x00
+#define ERR_DEPRECATED 0x01
+#define ERR_NO_MEMORY 0x02
+#define ERR_RAND_INIT 0x03
+#define ERR_REQUEST_TOO_LARGE 0x06
+#define ERR_INVALID_POOL_SIZE 0x07
+#define ERR_CANNOT_ACCESS_DISK 0x09
+#define ERR_JENT_FAILURE 0x0A
 
 // Check debug logs for Win32 system error codes
-#define ERR_WIN32_WINAPI            0x31
-#define ERR_WIN32_CNG               0x32
+#define ERR_WIN32_WINAPI 0x31
+#define ERR_WIN32_CNG 0x32
 
-#define ERR_ENTROPY_TOO_LOW         0xE0
-#define ERR_INIT_CHECKS_FAILED      0xE1
-#define ERR_ASSERTION_FAILED        0xE2
+#define ERR_ENTROPY_TOO_LOW 0xE0
+#define ERR_INIT_CHECKS_FAILED 0xE1
+#define ERR_ASSERTION_FAILED 0xE2
 
 /**
  * WARNING codes
@@ -56,20 +56,19 @@ extern void kill(void);
  * Every routine that issues a user warning will
  * print a custom warning message to stderr.
  */
-#define WARN_DEPRECATED         0xF0
-#define WARN_INVALID_ARGS       0xF1
-#define WARN_UNSAFE             0xF2
+#define WARN_DEPRECATED 0xF0
+#define WARN_INVALID_ARGS 0xF1
+#define WARN_UNSAFE 0xF2
 
 typedef int ecode_t;
 
 #define FATAL 1
 
-typedef struct _EXCEPTION_ST
-{
-    ecode_t err_code;  // Internal error code
-    ecode_t err_fatal; // Trigger a system abort if fatal
-    ecode_t err_mswec; // WIN32 error code for bug reports
-    ecode_t err_line;  // Line number of exception
+typedef struct _EXCEPTION_ST {
+  ecode_t err_code;  // Internal error code
+  ecode_t err_fatal; // Trigger a system abort if fatal
+  ecode_t err_mswec; // WIN32 error code for bug reports
+  ecode_t err_line;  // Line number of exception
 } EXCEPTION;
 
 #include <setjmp.h>
@@ -88,52 +87,46 @@ extern void warn(char *, int);
 #define TRY if (setjmp(ex_buf) == 0)
 
 #if defined(XR_DEBUG)
-#define CATCH                                                                      \
-    else                                                                           \
-    {                                                                              \
-        handle_exception(ex.err_code, ex.err_fatal, ex.err_mswec, ex.err_line, 1); \
-        clear_exception(&ex);                                                      \
-    }
+#define CATCH                                                                  \
+  else {                                                                       \
+    handle_exception(ex.err_code, ex.err_fatal, ex.err_mswec, ex.err_line, 1); \
+    clear_exception(&ex);                                                      \
+  }
 #else
-#define CATCH                                                                      \
-    else                                                                           \
-    {                                                                              \
-        handle_exception(ex.err_code, ex.err_fatal, ex.err_mswec, ex.err_line, 0); \
-        clear_exception(&ex);                                                      \
-    }
+#define CATCH                                                                  \
+  else {                                                                       \
+    handle_exception(ex.err_code, ex.err_fatal, ex.err_mswec, ex.err_line, 0); \
+    clear_exception(&ex);                                                      \
+  }
 #endif
 
 #if defined(XR_DEBUG)
-#define Throw(code, fatal, mswec, line) \
-    handle_exception(code, fatal, mswec, line, 1)
+#define Throw(code, fatal, mswec, line)                                        \
+  handle_exception(code, fatal, mswec, line, 1)
 #else
-#define Throw(code, fatal, mswec, line) \
-    handle_exception(code, fatal, mswec, line, 0)
+#define Throw(code, fatal, mswec, line)                                        \
+  handle_exception(code, fatal, mswec, line, 0)
 #endif
 
-#define Raise(code, fatal, mswec, line) \
-    set_exception(code, fatal, mswec, line)
+#define Raise(code, fatal, mswec, line) set_exception(code, fatal, mswec, line)
 
 #if defined(XR_DEBUG)
-#define Log(code, fatal, mswec, line) \
-    dump_log(code, fatal, mswec, line, 1)
+#define Log(code, fatal, mswec, line) dump_log(code, fatal, mswec, line, 1)
 #else
-#define Log(code, fatal, mswec, line) \
-    dump_log(code, fatal, mswec, line, 0)
+#define Log(code, fatal, mswec, line) dump_log(code, fatal, mswec, line, 0)
 #endif
 
 #if defined(XR_DEBUG)
-#define Warn(warning, warntype) \
-    warn(warning, warntype)
+#define Warn(warning, warntype) warn(warning, warntype)
 #else
-#define Warn(warning, warntype) \
-    {}
+#define Warn(warning, warntype)                                                \
+  {}
 #endif
 
-#define Assert(stmt)                         \
-    do {                                     \
-        if (!(stmt))                         \
-            assert_expr(__FILE__, __LINE__); \
-    } while (0)
+#define Assert(stmt)                                                           \
+  do {                                                                         \
+    if (!(stmt))                                                               \
+      assert_expr(__FILE__, __LINE__);                                         \
+  } while (0)
 
 #endif /* EXCEPTIONS_H */

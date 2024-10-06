@@ -37,32 +37,34 @@ int rdseed_check_support();
  *
  * Returns 1 on success, 0 on underflow.
  */
-extern inline int __attribute__( ( always_inline ) ) rdrand16_step(unsigned short int *therand)
-{
-    unsigned short int val;
-    int cf_error_status;
-    asm volatile("\n\
+extern inline int __attribute__((always_inline))
+rdrand16_step(unsigned short int *therand) {
+  unsigned short int val;
+  int cf_error_status;
+  asm volatile("\n\
         rdrand %%ax;\n\
         mov $1,%%edx;\n\
         cmovae %%ax,%%dx;\n\
         mov %%edx,%1;\n\
-        mov %%ax, %0;" : "=r"(val), "=r"(cf_error_status)::"%ax", "%dx");
-    *therand = val;
-    return cf_error_status;
+        mov %%ax, %0;"
+               : "=r"(val), "=r"(cf_error_status)::"%ax", "%dx");
+  *therand = val;
+  return cf_error_status;
 }
 
-extern inline int __attribute__( ( always_inline ) ) rdseed16_step(unsigned short int *therand)
-{
-    unsigned short int val;
-    int cf_error_status;
-    asm volatile("\n\
+extern inline int __attribute__((always_inline))
+rdseed16_step(unsigned short int *therand) {
+  unsigned short int val;
+  int cf_error_status;
+  asm volatile("\n\
         rdseed %%ax;\n\
         mov $1,%%edx;\n\
         cmovae %%ax,%%dx;\n\
         mov %%edx,%1;\n\
-        mov %%ax, %0;" : "=r"(val), "=r"(cf_error_status)::"%ax", "%dx");
-    *therand = val;
-    return cf_error_status;
+        mov %%ax, %0;"
+               : "=r"(val), "=r"(cf_error_status)::"%ax", "%dx");
+  *therand = val;
+  return cf_error_status;
 }
 
 /**
@@ -71,32 +73,34 @@ extern inline int __attribute__( ( always_inline ) ) rdseed16_step(unsigned shor
  *
  * Returns 1 on success, 0 on underflow.
  */
-extern inline int __attribute__( ( always_inline ) ) rdrand32_step(unsigned int *therand)
-{
-    int val;
-    int cf_error_status;
-    asm volatile("\n\
+extern inline int __attribute__((always_inline))
+rdrand32_step(unsigned int *therand) {
+  int val;
+  int cf_error_status;
+  asm volatile("\n\
         rdrand %%eax;\n\
         mov $1,%%edx;\n\
         cmovae %%eax,%%edx;\n\
         mov %%edx,%1;\n\
-        mov %%eax,%0;" : "=r"(val), "=r"(cf_error_status)::"%eax", "%edx");
-    *therand = val;
-    return cf_error_status;
+        mov %%eax,%0;"
+               : "=r"(val), "=r"(cf_error_status)::"%eax", "%edx");
+  *therand = val;
+  return cf_error_status;
 }
 
-extern inline int __attribute__( ( always_inline ) ) rdseed32_step(unsigned int *therand)
-{
-    int val;
-    int cf_error_status;
-    asm volatile("\n\
+extern inline int __attribute__((always_inline))
+rdseed32_step(unsigned int *therand) {
+  int val;
+  int cf_error_status;
+  asm volatile("\n\
         rdseed %%eax;\n\
         mov $1,%%edx;\n\
         cmovae %%eax,%%edx;\n\
         mov %%edx,%1;\n\
-        mov %%eax,%0;" : "=r"(val), "=r"(cf_error_status)::"%eax", "%edx");
-    *therand = val;
-    return cf_error_status;
+        mov %%eax,%0;"
+               : "=r"(val), "=r"(cf_error_status)::"%eax", "%edx");
+  *therand = val;
+  return cf_error_status;
 }
 
 /**
@@ -105,30 +109,32 @@ extern inline int __attribute__( ( always_inline ) ) rdseed32_step(unsigned int 
  *
  * Returns 1 on success, 0 on underflow.
  */
-extern inline int __attribute__( ( always_inline ) ) rdrand64_step(unsigned long long int *therand)
-{
-    unsigned long long int val;
-    int cf_error_status;
-    asm volatile("\n\
+extern inline int __attribute__((always_inline))
+rdrand64_step(unsigned long long int *therand) {
+  unsigned long long int val;
+  int cf_error_status;
+  asm volatile("\n\
         rdrand %%rax;\n\
         mov $1,%%edx;\n\
         cmovae %%rax,%%rdx;\n\
         mov %%edx,%1;\n\
-        mov %%rax, %0;" : "=r"(val), "=r"(cf_error_status)::"%rax", "%rdx");
-    *therand = val;
-    return cf_error_status;
+        mov %%rax, %0;"
+               : "=r"(val), "=r"(cf_error_status)::"%rax", "%rdx");
+  *therand = val;
+  return cf_error_status;
 }
 
-extern inline int __attribute__( ( always_inline ) ) rdseed64_step(unsigned long long int *therand)
-{
-    unsigned long long int val;
-    int cf_error_status;
-    asm volatile("\n\
+extern inline int __attribute__((always_inline))
+rdseed64_step(unsigned long long int *therand) {
+  unsigned long long int val;
+  int cf_error_status;
+  asm volatile("\n\
         rdseed %%rax;\n\
         mov $1,%%edx;\n\
         cmovae %%rax,%%rdx;\n\
         mov %%edx,%1;\n\
-        mov %%rax, %0;" : "=r"(val), "=r"(cf_error_status)::"%rax", "%rdx");
-    *therand = val;
-    return cf_error_status;
+        mov %%rax, %0;"
+               : "=r"(val), "=r"(cf_error_status)::"%rax", "%rdx");
+  *therand = val;
+  return cf_error_status;
 }

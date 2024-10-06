@@ -22,8 +22,8 @@
 extern "C" {
 #endif
 
-#include <windows.h>
 #include "common/defs.h"
+#include <windows.h>
 
 /* OpenSSL is required for cryptographic utilities */
 #if __has_include(<openssl/sha.h>)
@@ -37,7 +37,7 @@ extern "C" {
 
 #if RNG_POOL_SIZE % SHA512_DIGEST_LENGTH
 #error "RNG_POOL_SIZE must be a multiple of SHA512_DIGEST_LEN"
-#endif 
+#endif
 
 #define RNG_POOL_CHUNK_SIZE SHA512_DIGEST_LENGTH
 
@@ -52,24 +52,24 @@ extern "C" {
  */
 #define RNG_POOL_MIX_INTERVAL 32
 
-BOOL RandPoolInit (void);
-void RandCleanStop (void);
-BOOL RandFastPoll (void);
-BOOL RandSlowPoll (void);
-void RandPoolMix (void);
-BOOL RandFetchBytes (uint8_t* out, size_t len, int forceSlowPoll);
+BOOL RandPoolInit(void);
+void RandCleanStop(void);
+BOOL RandFastPoll(void);
+BOOL RandSlowPoll(void);
+void RandPoolMix(void);
+BOOL RandFetchBytes(uint8_t *out, size_t len, int forceSlowPoll);
 
-BOOL CALLBACK EnumWindowsProc (HWND hWnd, LPARAM lParam);
-LRESULT CALLBACK MouseProc (int nCode, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK KeyboardProc (int nCode, WPARAM wParam, LPARAM lParam);
-static unsigned __stdcall FastPollThreadProc (void *_dummy);
+BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam);
+LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
+static unsigned __stdcall FastPollThreadProc(void *_dummy);
 
-bool RngStart (void);
-void RngEnableUserEvents (void);
-void RngStop (void);
-bool DidRngStart (void);
+bool RngStart(void);
+void RngEnableUserEvents(void);
+void RngStop(void);
+bool DidRngStart(void);
 bool DidRngSlowPoll(void);
-void RngMix (void);
+void RngMix(void);
 
 /**
  * Fetch len bytes from the randomness pool where len can be any
@@ -77,7 +77,7 @@ void RngMix (void);
  *
  * Returns 1 if the bytes were fetched successfully, 0 otherwise.
  */
-bool RngFetchBytes (uint8_t* out, size_t len);
+bool RngFetchBytes(uint8_t *out, size_t len);
 
 extern BOOL bStrictChecksEnabled;
 extern BOOL bUserEventsEnabled;

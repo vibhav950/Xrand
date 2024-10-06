@@ -39,39 +39,39 @@
 #define HASH_DBRG_SHA512_OUTLEN 64U
 
 /* SP 800-90Ar1, Table 2 */
-#define HASH_DRBG_SEED_LEN                (111U) /* Seed length */
-#define HASH_DRBG_MIN_ENTROPY_LEN          (32U) /* Min entropy length */
-#define HASH_DRBG_MAX_ENTROPY_LEN   (1ULL << 32) /* Max entropy length */
-#define HASH_DRBG_MAX_NONCE_LEN     (1ULL << 16) /* Max nonce length */
-#define HASH_DRBG_MAX_PERS_STR_LEN  (1ULL << 32) /* Max personalization string length */
-#define HASH_DRBG_MAX_ADDN_INP_LEN  (1ULL << 32) /* Max additional input length */
-#define HASH_DRBG_MAX_OUT_LEN       (1ULL << 16) /* Max output length */
-#define HASH_DRBG_MAX_RESEED_CNT    (1ULL << 48) /* Max reseed count */
+#define HASH_DRBG_SEED_LEN (111U)              /* Seed length */
+#define HASH_DRBG_MIN_ENTROPY_LEN (32U)        /* Min entropy length */
+#define HASH_DRBG_MAX_ENTROPY_LEN (1ULL << 32) /* Max entropy length */
+#define HASH_DRBG_MAX_NONCE_LEN (1ULL << 16)   /* Max nonce length */
+#define HASH_DRBG_MAX_PERS_STR_LEN                                             \
+  (1ULL << 32) /* Max personalization string length */
+#define HASH_DRBG_MAX_ADDN_INP_LEN                                             \
+  (1ULL << 32)                                /* Max additional input length */
+#define HASH_DRBG_MAX_OUT_LEN (1ULL << 16)    /* Max output length */
+#define HASH_DRBG_MAX_RESEED_CNT (1ULL << 48) /* Max reseed count */
 
 /**
  * This struct defines the internal state of the
  * HASH_DRBG; See SP 800-90Ar1 Section 10.1.1.1.
-*/
+ */
 typedef struct _HASH_DRBG_STATE {
-    /* Value V */
-    uint8_t V[HASH_DRBG_SEED_LEN];
-    /* Constant C */
-    uint8_t C[HASH_DRBG_SEED_LEN];
-    /* 64-bit reseed counter */
-    uint64_t reseed_counter;
-    /* Flags (usage specific) */
-    uint8_t flags;
+  /* Value V */
+  uint8_t V[HASH_DRBG_SEED_LEN];
+  /* Constant C */
+  uint8_t C[HASH_DRBG_SEED_LEN];
+  /* 64-bit reseed counter */
+  uint64_t reseed_counter;
+  /* Flags (usage specific) */
+  uint8_t flags;
 } HASH_DRBG_STATE;
 
-
-#define ERR_HASH_DRBG_SUCCESS     0x00    /* Success */
-#define ERR_HASH_DRBG_NOT_INIT   -0x01    /* Not initialized */
-#define ERR_HASH_DRBG_NULL_PTR   -0x02    /* Invalid null pointer passed */
-#define ERR_HASH_DRBG_BAD_ARGS   -0x03    /* Bad argument passed */
-#define ERR_HASH_DRBG_INTERNAL   -0x04    /* Internal library failed */
-#define ERR_HASH_DRBG_MEM_FAIL   -0x05    /* Ran out of memory */
-#define ERR_HASH_DRBG_DO_RESEED  -0x06    /* Reseed required */
-
+#define ERR_HASH_DRBG_SUCCESS 0x00 /* Success */
+#define ERR_HASH_DRBG_NOT_INIT -0x01 /* Not initialized */
+#define ERR_HASH_DRBG_NULL_PTR -0x02 /* Invalid null pointer passed */
+#define ERR_HASH_DRBG_BAD_ARGS -0x03 /* Bad argument passed */
+#define ERR_HASH_DRBG_INTERNAL -0x04 /* Internal library failed */
+#define ERR_HASH_DRBG_MEM_FAIL -0x05 /* Ran out of memory */
+#define ERR_HASH_DRBG_DO_RESEED -0x06 /* Reseed required */
 
 /** @brief  Allocate a new @p HASH_DRBG_STATE state.
  *
@@ -79,14 +79,12 @@ typedef struct _HASH_DRBG_STATE {
  */
 HASH_DRBG_STATE *hash_drbg_new();
 
-
 /**  @brief  Safely stop the HASH_DRBG instance and free
  *           the allocated memory.
  *
  *   @return  Void.
  */
 void hash_drbg_clear(HASH_DRBG_STATE *state);
-
 
 /** @brief  Instantiate a @p HASH_DRBG state.
  *
@@ -103,14 +101,10 @@ void hash_drbg_clear(HASH_DRBG_STATE *state);
  *
  *  @return  A ERR_HASH_DRBG_* value.
  */
-int hash_drbg_init(HASH_DRBG_STATE *state,
-                   const uint8_t *entropy,
-                   size_t entropy_len,
-                   const uint8_t *nonce,
-                   size_t nonce_len,
+int hash_drbg_init(HASH_DRBG_STATE *state, const uint8_t *entropy,
+                   size_t entropy_len, const uint8_t *nonce, size_t nonce_len,
                    const uint8_t *personalization_str,
                    size_t personalization_str_len);
-
 
 /** @brief  Reseed a @p HASH_DRBG state.
  *
@@ -121,15 +115,13 @@ int hash_drbg_init(HASH_DRBG_STATE *state,
  *  @param additional_input         The additional input string received from
  *                                  the consuming application (can be Null).
  *  @param additional_input_len     The length of @p additional_input in bytes
- *                                  (can be zero if @p additional_input is Null).
+ *                                  (can be zero if @p additional_input is
+ * Null).
  *  @return  A ERR_HASH_DRBG_* value.
  */
-int hash_drbg_reseed(HASH_DRBG_STATE *state,
-                     const uint8_t *entropy,
-                     size_t entropy_len,
-                     const uint8_t *additional_input,
+int hash_drbg_reseed(HASH_DRBG_STATE *state, const uint8_t *entropy,
+                     size_t entropy_len, const uint8_t *additional_input,
                      size_t additional_input_len);
-
 
 /** @brief  Generate pseudorandom bits from a @p HASH_DRBG state.
  *
@@ -140,15 +132,13 @@ int hash_drbg_reseed(HASH_DRBG_STATE *state,
  *  @param additional_input         The additional input string received from
  *                                  the consuming application (can be Null).
  *  @param additional_input_len     The length of @p additional_input in bytes
- *                                  (can be zero if @p additional_input is Null).
+ *                                  (can be zero if @p additional_input is
+ * Null).
  *
  *  @return  A ERR_HASH_DRBG_* value.
  */
-int hash_drbg_generate(HASH_DRBG_STATE *state,
-                       uint8_t *output,
-                       size_t output_len,
-                       const uint8_t *additional_input,
+int hash_drbg_generate(HASH_DRBG_STATE *state, uint8_t *output,
+                       size_t output_len, const uint8_t *additional_input,
                        size_t additional_input_len);
-
 
 #endif /* HASH_DRBG_H */

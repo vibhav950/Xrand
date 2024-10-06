@@ -1,8 +1,9 @@
 /** @file trivium.h
- *  @brief Macros and function prototypes for the Trivium pseudorandom generator.
+ *  @brief Macros and function prototypes for the Trivium pseudorandom
+ * generator.
  *
- *  This PRNG is based on the original Trivium key-stream generator selected 
- *  for the eSTREAM (part of the EU ECRYPT project) portfolio of lightweight 
+ *  This PRNG is based on the original Trivium key-stream generator selected
+ *  for the eSTREAM (part of the EU ECRYPT project) portfolio of lightweight
  *  stream ciphers [https://www.ecrypt.eu.org/stream/e2-trivium.html].
  *
  *  The cipher uses a 80-bit key and 80-bit initialization vector (IV), and its
@@ -33,15 +34,15 @@
 #ifndef TRIVIUM_H
 #define TRIVIUM_H
 
-#include "common/defs.h" 
+#include "common/defs.h"
 
 /* The Trivium key size in bytes. */
-#define TRIVIUM_KEY_SIZE            10
+#define TRIVIUM_KEY_SIZE 10
 /* The Trivium IV size in bytes. */
-#define TRIVIUM_IV_SIZE             10
+#define TRIVIUM_IV_SIZE 10
 
 /* Period for re-seeding the CSPRNG. */
-#define TRIVIUM_RESEED_PERIOD       (1ULL << 20)
+#define TRIVIUM_RESEED_PERIOD (1ULL << 20)
 
 /* Init the Trivium CSPRNG. */
 status_t TriviumCsprngInit(void);

@@ -4,7 +4,7 @@
  * IEEE-754 single precision and double precision formats.
  *
  * LICENSE
- * ======= 
+ * =======
  *
  * Copyright (C) 2024-25  Xrand
  *
@@ -28,43 +28,43 @@
 #include "endianness.h"
 
 typedef union _ieee754_float_t {
-    float f;
+  float f;
 
-    /* IEEE 754 single-precision format */
-    struct {
+  /* IEEE 754 single-precision format */
+  struct {
 #ifdef __BIG_ENDIAN__
-	unsigned int sign:1;
-	unsigned int exponent:8;
-	unsigned int mantissa:23;
-#endif					/* Big endian */
+    unsigned int sign : 1;
+    unsigned int exponent : 8;
+    unsigned int mantissa : 23;
+#endif /* Big endian */
 #ifdef __LITTLE_ENDIAN__
-	unsigned int mantissa:23;
-	unsigned int exponent:8;
-	unsigned int sign:1;
-#endif					/* Little endian */
-    } fmt;
+    unsigned int mantissa : 23;
+    unsigned int exponent : 8;
+    unsigned int sign : 1;
+#endif /* Little endian */
+  } fmt;
 } ieee754_float_t;
 
 #define IEEE754_SINGLE_PREC_BIAS 0x7f
 
 typedef union _ieee754_double_t {
-	double d;
+  double d;
 
-	/* IEEE 754 double-precision format */
-	struct {
+  /* IEEE 754 double-precision format */
+  struct {
 #ifdef __BIG_ENDIAN__
-	unsigned int sign:1;
-	unsigned int exponent:11;
-	unsigned int mantissa0:20;
-	unsigned int mantissa1:32;
-#endif					/* Big endian */
+    unsigned int sign : 1;
+    unsigned int exponent : 11;
+    unsigned int mantissa0 : 20;
+    unsigned int mantissa1 : 32;
+#endif /* Big endian */
 #ifdef __LITTLE_ENDIAN__
-	unsigned int mantissa1:32;
-	unsigned int mantissa0:20;
-	unsigned int exponent:11;
-	unsigned int sign:1;
-#endif					/* Little endian */
-	} fmt;
+    unsigned int mantissa1 : 32;
+    unsigned int mantissa0 : 20;
+    unsigned int exponent : 11;
+    unsigned int sign : 1;
+#endif /* Little endian */
+  } fmt;
 } ieee754_double_t;
 
 #define IEEE754_DOUBLE_PREC_BIAS 0x3ff

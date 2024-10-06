@@ -1,6 +1,3 @@
-#ifndef BIGNUM_H
-#define BIGNUM_H
-
 /**
  * bignum.h
  *
@@ -9,62 +6,71 @@
  * This file is a part of Xrand (https://github.com/vibhav950/Xrand).
  */
 
-#include <assert.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <limits.h>
+#ifndef BIGNUM_H
+#define BIGNUM_H
+
 #include "common/defs.h"
 #include "common/endianness.h"
+#include <assert.h>
+#include <limits.h>
+#include <stdint.h>
+#include <stdio.h>
+
 
 /* Defines for the word width depending upon the architecture. */
 #ifndef WORD_SIZE
-  #if (defined(__GNUC__) || defined(_MSC_VER)) && \
-      (defined(__x86_64__) || defined(_M_X64) || defined(__aarch64__) || defined(__powerpc64__))
-    #define WORD_SIZE 4
-  #elif (defined(__GNUC__) || defined(_MSC_VER)) && \
-      (defined(__i386__) || defined(_M_IX86) || defined(__arm__) || defined(__powerpc__))
-    #define WORD_SIZE 2
-  #else
-    #define WORD_SIZE 1
-  #endif
+#if (defined(__GNUC__) || defined(_MSC_VER)) &&                                \
+    (defined(__x86_64__) || defined(_M_X64) || defined(__aarch64__) ||         \
+     defined(__powerpc64__))
+#define WORD_SIZE 4
+#elif (defined(__GNUC__) || defined(_MSC_VER)) &&                              \
+    (defined(__i386__) || defined(_M_IX86) || defined(__arm__) ||              \
+     defined(__powerpc__))
+#define WORD_SIZE 2
+#else
+#define WORD_SIZE 1
+#endif
 #endif
 
-/* Here comes the compile-time specialization for how large the underlying array size should be. */
-/* The choices are 1, 2 and 4 bytes in size with uint32, uint64 for WORD_SIZE==4, as temporary. */
+/* Here comes the compile-time specialization for how large the underlying array
+ * size should be. */
+/* The choices are 1, 2 and 4 bytes in size with uint32, uint64 for
+ * WORD_SIZE==4, as temporary. */
 #ifndef WORD_SIZE
-  #error Failed to detect WORD_SIZE, must be explicitly defined as 1, 2, or 4
+#error Failed to detect WORD_SIZE, must be explicitly defined as 1, 2, or 4
 #elif (WORD_SIZE == 1)
-  /* Data type of array in structure */
-  typedef uint8_t                 bn_uint_t;  /* Unsigned*/
-  typedef int8_t                  bn_sint_t;  /* Signed */
-  /* Data-type larger than bn_uint_t, for holding intermediate results of calculations */
-  typedef uint32_t                bn_udbl_t;
-  typedef int32_t                 bn_sdbl_t;
-  /* Bitmask for getting MSB */
-  #define BN_MSB_MASK             ((bn_udbl_t)(0x80))
-  /* sprintf format string */
-  #define BN_SPRINTF_FORMAT_STR   "%.02x"
-  #define BN_SSCANF_FORMAT_STR    "%2hhx"
-  /* Max value of integer type */
-  #define BM_MAX_VAL              ((bn_udbl_t)0xFF)
+/* Data type of array in structure */
+typedef uint8_t bn_uint_t; /* Unsigned*/
+typedef int8_t bn_sint_t;  /* Signed */
+/* Data-type larger than bn_uint_t, for holding intermediate results of
+ * calculations */
+typedef uint32_t bn_udbl_t;
+typedef int32_t bn_sdbl_t;
+/* Bitmask for getting MSB */
+#define BN_MSB_MASK ((bn_udbl_t)(0x80))
+/* sprintf format string */
+#define BN_SPRINTF_FORMAT_STR "%.02x"
+#define BN_SSCANF_FORMAT_STR "%2hhx"
+/* Max value of integer type */
+#define BM_MAX_VAL ((bn_udbl_t)0xFF)
 #elif (WORD_SIZE == 2)
-  typedef uint16_t                bn_uint_t;
-  typedef int16_t                 bn_sint_t;
-  typedef uint32_t                bn_udbl_t;
-  typedef int32_t                 bn_sdbl_t;
-  #define BN_MSB_MASK             ((bn_udbl_t)(0x8000))
-  #define BN_SPRINTF_FORMAT_STR   "%.04x"
-  #define BN_SSCANF_FORMAT_STR    "%4hx"
-  #define BN_MAX_VAL              ((bn_udbl_t)0xFFFF)
+typedef uint16_t bn_uint_t;
+typedef int16_t bn_sint_t;
+typedef uint32_t bn_udbl_t;
+typedef int32_t bn_sdbl_t;
+#define BN_MSB_MASK ((bn_udbl_t)(0x8000))
+#define BN_SPRINTF_FORMAT_STR "%.04x"
+#define BN_SSCANF_FORMAT_STR "%4hx"
+#define BN_MAX_VAL ((bn_udbl_t)0xFFFF)
 #elif (WORD_SIZE == 4)
-  typedef uint32_t                bn_uint_t;
-  typedef int32_t                 bn_sint_t;
-  typedef uint64_t                bn_udbl_t;
-  typedef int64_t                 bn_sdbl_t;
-  #define BN_MSB_MASK             ((bn_udbl_t)(0x80000000))
-  #define BN_SPRINTF_FORMAT_STR   "%.08x"
-  #define BN_SSCANF_FORMAT_STR    "%8x"
-  #define BN_MAX_VAL              ((bn_udbl_t)0xFFFFFFFF)
+typedef uint32_t bn_uint_t;
+typedef int32_t bn_sint_t;
+typedef uint64_t bn_udbl_t;
+typedef int64_t bn_sdbl_t;
+#define BN_MSB_MASK ((bn_udbl_t)(0x80000000))
+#define BN_SPRINTF_FORMAT_STR "%.08x"
+#define BN_SSCANF_FORMAT_STR "%8x"
+#define BN_MAX_VAL ((bn_udbl_t)0xFFFFFFFF)
 #endif
 
 typedef struct bignum_st {
@@ -74,40 +80,44 @@ typedef struct bignum_st {
   int f;        /* flags */
 } BIGNUM;
 
-
 /* Error codes */
-#define BN_ERR_INTERNAL_FAILURE        -0x0001 /* Something went wrong, cleanup and exit */
-#define BN_ERR_OUT_OF_MEMORY           -0x0002 /* Failed memory allocation */
-#define BN_ERR_BUFFER_TOO_SMALL        -0x0003 /* Buffer too small to write to */ 
-#define BN_ERR_BAD_INPUT_DATA          -0x0004 /* Invalid input arguments provided */
-#define BN_ERR_INVALID_CHARACTER       -0x0005 /* Invalid character in the digit string */
-#define BN_ERR_NOT_ENOUGH_LIMBS        -0x0006 /* Request exceeded max allowed limbs*/
-#define BN_ERR_NEGATIVE_VALUE          -0x0007 /* Negative nput arguments provided */
-#define BN_ERR_DIVISION_BY_ZERO        -0x0008 /* Division by zero */
-
+#define BN_ERR_INTERNAL_FAILURE                                                \
+  -0x0001 /* Something went wrong, cleanup and exit */
+#define BN_ERR_OUT_OF_MEMORY -0x0002 /* Failed memory allocation */
+#define BN_ERR_BUFFER_TOO_SMALL -0x0003 /* Buffer too small to write to */
+#define BN_ERR_BAD_INPUT_DATA -0x0004 /* Invalid input arguments provided */
+#define BN_ERR_INVALID_CHARACTER                                               \
+  -0x0005 /* Invalid character in the digit string */
+#define BN_ERR_NOT_ENOUGH_LIMBS -0x0006 /* Request exceeded max allowed        \
+                                           limbs*/
+#define BN_ERR_NEGATIVE_VALUE -0x0007 /* Negative nput arguments provided */
+#define BN_ERR_DIVISION_BY_ZERO -0x0008 /* Division by zero */
 
 #define BN_MAX_LIMBS 1024
 #define BN_MAX_BITS (BN_MAX_LIMBS * WORD_SIZE << 3)
 #define BIW (WORD_SIZE << 3) /* bits in word */
 #define BIH (WORD_SIZE << 2) /* bits in half word */
 
-#define BN_CHECK(rv) do { if ((ret = rv) != 0) goto cleanup; } while (0)
+#define BN_CHECK(rv)                                                           \
+  do {                                                                         \
+    if ((ret = rv) != 0)                                                       \
+      goto cleanup;                                                            \
+  } while (0)
 
 /* Always use this macro when checking for null functional arguments   */
 #define BN_REQUIRE(cond, msg) assert((cond) && msg)
 
 /* Convert an int to sign value; 1 for positive, -1 for negative */
-#define BN_INT_TO_SIGN(x) ((int) (((bn_uint_t) x) >> (BIW - 1)) * -2 + 1)
+#define BN_INT_TO_SIGN(x) ((int)(((bn_uint_t)x) >> (BIW - 1)) * -2 + 1)
 
 /* Convert a dbl to sign value; 1 for positive, -1 for negative  */
-#define BN_DBL_TO_SIGN(x) ((int) (((bn_udbl_t) x) >> ((BIW << 1) - 1)) * -2 + 1)
+#define BN_DBL_TO_SIGN(x) ((int)(((bn_udbl_t)x) >> ((BIW << 1) - 1)) * -2 + 1)
 
 /* Get the number of bn_uint_t limbs from the number of bits  */
 #define BN_BITS_TO_LIMBS(x) (((x) + BIW - 1) / BIW)
 
 /* Get the number of bn_uint_t limbs from the number of words */
 #define BN_WORDS_TO_LIMBS(x) (((x) + WORD_SIZE - 1) / WORD_SIZE)
-
 
 /* Initialize one or multiple BIGNUM(s) */
 void bn_init(BIGNUM *X, ...);
@@ -193,7 +203,7 @@ int bn_mod(BIGNUM *A, BIGNUM *B, BIGNUM *R);
 /* Integer modulo: r = A (mod b) */
 int bn_mod_uint(BIGNUM *A, bn_uint_t b, bn_uint_t *r);
 /* Modular exponentiation: X = A^E (mod N) */
-int bn_exp_mod(BIGNUM* A, BIGNUM *E, BIGNUM *N, BIGNUM *_RR, BIGNUM *X);
+int bn_exp_mod(BIGNUM *A, BIGNUM *E, BIGNUM *N, BIGNUM *_RR, BIGNUM *X);
 /* Greatest common divisor: G = gcd(A, B) */
 int bn_gcd(BIGNUM *A, BIGNUM *B, BIGNUM *G);
 /* Modular inverse: X = A^-1 mod N  */
@@ -205,7 +215,8 @@ typedef int (*f_rng_t)(void *, uint8_t *, size_t, const uint8_t *, size_t);
 /* Miller-Rabin probabilistic primality test */
 int bn_check_probable_prime(BIGNUM *W, int iter, f_rng_t f_rng, void *rng_ctx);
 /* Generate a probable prime */
-int bn_generate_proabable_prime(BIGNUM *X, int nbits, f_rng_t f_rng, void *rng_ctx);
+int bn_generate_proabable_prime(BIGNUM *X, int nbits, f_rng_t f_rng,
+                                void *rng_ctx);
 
 /* Perform tests */
 int bn_self_test(f_rng_t f_rng, void *rng_ctx, int verbose, FILE *fp);

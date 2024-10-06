@@ -25,20 +25,19 @@
 
 #include "crc.h"
 
-/* Calculate the CRC-32 checksum of the given string 
+/* Calculate the CRC-32 checksum of the given string
    using the above table. */
-uint32_t crc32(const uint8_t *str, size_t len)
-{
-    uint32_t crc;
+uint32_t crc32(const uint8_t *str, size_t len) {
+  uint32_t crc;
 
-    crc = ~0u;
-    while (len--)
-        crc = crc32_lookup[(crc ^ *str++) & 0xff] ^ (crc >> 8);
-    return crc ^ ~0u;
+  crc = ~0u;
+  while (len--)
+    crc = crc32_lookup[(crc ^ *str++) & 0xff] ^ (crc >> 8);
+  return crc ^ ~0u;
 }
 
-void crc32_self_test(void)
-{
-    const uint8_t tv[8] = {0x01u, 0x23u, 0x45u, 0x67u, 0x89u, 0xabu, 0xcdu, 0xefu};
-    ASSERT(crc32(tv, 8) == 0x28c7d1aeu);
+void crc32_self_test(void) {
+  const uint8_t tv[8] = {0x01u, 0x23u, 0x45u, 0x67u,
+                         0x89u, 0xabu, 0xcdu, 0xefu};
+  ASSERT(crc32(tv, 8) == 0x28c7d1aeu);
 }

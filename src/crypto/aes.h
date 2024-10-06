@@ -28,20 +28,20 @@
 #ifndef AES256_H
 #define AES256_H
 
-#include <stdint.h>
 #include <immintrin.h>
+#include <stdint.h>
 
-#define ALIGN16 __attribute__( ( aligned(16) ) )
+#define ALIGN16 __attribute__((aligned(16)))
 
 #define AES256
 
-#define AES256_KEY_SIZE     32U
-#define AES_BLOCK_SIZE      16U
-#define AES256_ROUNDS       14U
+#define AES256_KEY_SIZE 32U
+#define AES_BLOCK_SIZE 16U
+#define AES256_ROUNDS 14U
 
 /** The AES-256 cipher key. */
 typedef ALIGN16 struct _aes256_key_t {
-    uint8_t k[AES256_KEY_SIZE];
+  uint8_t k[AES256_KEY_SIZE];
 } aes256_key_t;
 
 /**
@@ -49,7 +49,7 @@ typedef ALIGN16 struct _aes256_key_t {
  * Must be 16-bytes aligned.
  */
 typedef ALIGN16 struct _aes256_ks_t {
-    __m128i rk[AES256_ROUNDS + 1];
+  __m128i rk[AES256_ROUNDS + 1];
 } aes256_ks_t;
 
 /** @brief  Expand the cipher key into a key schedule
@@ -60,9 +60,7 @@ typedef ALIGN16 struct _aes256_ks_t {
  *
  *  @return  Void.
  */
-void aes256_expand_key(const aes256_key_t *key,
-                       aes256_ks_t *ks);
-
+void aes256_expand_key(const aes256_key_t *key, aes256_ks_t *ks);
 
 /** @brief  Encrypt one 128-bit block.
  *
@@ -72,8 +70,6 @@ void aes256_expand_key(const aes256_key_t *key,
  *
  *  @return  Void.
  */
-void aes256_encr_block(const uint8_t *pt,
-                       uint8_t *ct,
-                       const aes256_ks_t *ks);
+void aes256_encr_block(const uint8_t *pt, uint8_t *ct, const aes256_ks_t *ks);
 
 #endif /* AES256_H */

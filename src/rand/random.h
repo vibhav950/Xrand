@@ -29,9 +29,9 @@
 
 #include <stdio.h>
 
-void uniform (FILE *fp, double a, double b, int iter);
-void normal (FILE *fp, double mu, double sigma, int iter);
-void triangular (FILE *fp, double a, double b, double c, int iter);
-void poisson (FILE *fp, double lambda, int iter);
-void binomial (FILE *fp, int n, double p, int iter);
-void randstr (FILE *fp, char lc, char uc, char nc, char sc, int len, int iter);
+void uniform(FILE *fp, double a, double b, int iter);
+void normal(FILE *fp, double mu, double sigma, int iter);
+void triangular(FILE *fp, double a, double b, double c, int iter);
+void poisson(FILE *fp, double lambda, int iter);
+void binomial(FILE *fp, int n, double p, int iter);
+void randstr(FILE *fp, char lc, char uc, char nc, char sc, int len, int iter);
