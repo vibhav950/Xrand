@@ -199,13 +199,15 @@ int bn_gcd(BIGNUM *A, BIGNUM *B, BIGNUM *G);
 /* Modular inverse: X = A^-1 mod N  */
 int bn_inv_mod(BIGNUM *A, BIGNUM *N, BIGNUM *X);
 
+/* Generic CRNG generate function */
+typedef int (*f_rng_t)(void *, uint8_t *, size_t, const uint8_t *, size_t);
+
 /* Miller-Rabin probabilistic primality test */
-int bn_check_probable_prime(BIGNUM *W, int iter, void *f_rng);
+int bn_check_probable_prime(BIGNUM *W, int iter, f_rng_t f_rng, void *rng_ctx);
 /* Generate a probable prime */
-int bn_generate_proabable_prime(BIGNUM *X, int nbits, void *f_rng);
+int bn_generate_proabable_prime(BIGNUM *X, int nbits, f_rng_t f_rng, void *rng_ctx);
 
 /* Perform tests */
-int bn_self_test(void *rng, int verbose, FILE *fp);
-
+int bn_self_test(f_rng_t f_rng, void *rng_ctx, int verbose, FILE *fp);
 
 #endif /* BIGNUM_H */

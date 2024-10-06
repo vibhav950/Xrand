@@ -61,7 +61,6 @@ typedef unsigned __int64 u64;
 #endif
 #define max(_a, _b)     (((_a) > (_b)) ? (_a) : (_b))
 
-
 #ifdef min
     #undef min
 #endif
@@ -77,8 +76,8 @@ typedef enum {
 } bool;
 
 typedef enum {
-    FAILURE = 0,
-    SUCCESS
+    SUCCESS = 0,
+    FAILURE
 } status_t;
 
 #define ASSERT(stmt) Assert(stmt)
@@ -95,9 +94,9 @@ typedef enum {
 #else
 /**
  * Provide a secure way to clear a block of memory by
- * declaring the pointer volatile so that the compiler
- * must always dereference it, and therefore cannot
- * optimize away the call to memset.
+ * declaring the pointer to memset volatile so that the
+ * compiler must always dereference it, and therefore
+ * cannot "optimize away" the call to memset.
  */
     #include <string.h>
     typedef void *(*memset_t)(void *_p, int _zv, size_t _nc);

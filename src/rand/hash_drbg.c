@@ -50,7 +50,7 @@ static inline void hash_drbg_add_int(uint8_t *V,
 static int hash_drbg_df(const uint8_t *input, size_t input_len,
                         uint8_t *output, size_t output_len)
 {
-    status_t ret = ERR_HASH_DRBG_SUCCESS;
+    int ret = ERR_HASH_DRBG_SUCCESS;
     int i, remaining;
     uint32_t output_len_bits;
     uint8_t counter;

@@ -14,7 +14,6 @@
 
 #include "bignum.h"
 #include "common/defs.h"
-#include "rand/ctr_drbg.h"
 
 #include <stdarg.h>
 #include <string.h>
@@ -2088,14 +2087,15 @@ static int num_trial_divisions(int nbits)
 
    Returns 0 if the number is COMPOSITE, 1 if it is PROBABLY_PRIME,
    and a negative value upon error.
-   
+
    Note: Always explicitly check for the return value of this 
    function being either 0 or 1, since the the function can also
    return with error. */
-int bn_check_probable_prime(BIGNUM *W, int iter, void *f_rng)
+int bn_check_probable_prime(BIGNUM *W, int iter, f_rng_t f_rng, void *rng_ctx)
 {
 	BN_REQUIRE(W, "W is null");
 	BN_REQUIRE(f_rng, "f_rng is null");
+	BN_REQUIRE(rng_ctx, "rng_ctx is null");
 
 	BIGNUM Z, M, B, RR, T;
 	int ret = -1, a, i, j, wlen;
@@ -2121,7 +2121,7 @@ int bn_check_probable_prime(BIGNUM *W, int iter, void *f_rng)
 	for (i = 0; i < iter; ++i) {
 		/* Pick a random 'B' such that len(B) == wlen and 1 < B < W-1 */
 		do {
-			if (ctr_drbg_generate(f_rng, (byte *)B.p, ceil_div(wlen, 8), NULL, 0) != SUCCESS) {
+			if (f_rng(rng_ctx, (byte *)B.p, ceil_div(wlen, 8), NULL, 0) != SUCCESS) {
 				ret = BN_ERR_INTERNAL_FAILURE;
 				goto cleanup;
 			}
@@ -2215,12 +2215,13 @@ cleanup:
 
 
 /* Generate a random pseudo-prime number [HAC 4.44].
-   
+
    Returns 0 on success. */
-int bn_generate_proabable_prime(BIGNUM *X, int nbits, void *f_rng)
+int bn_generate_proabable_prime(BIGNUM *X, int nbits, f_rng_t f_rng, void *rng_ctx)
 {
 	BN_REQUIRE(X, "X is null");
 	BN_REQUIRE(f_rng, "f_rng is null");
+	BN_REQUIRE(rng_ctx, "rng_ctx is null");
 
 	BIGNUM TX;
 	int ret = 0, i;
@@ -2235,7 +2236,7 @@ int bn_generate_proabable_prime(BIGNUM *X, int nbits, void *f_rng)
 
 generate:
 	/* Generate an nbits long odd random number */
-	if (ctr_drbg_generate(f_rng, (byte *)TX.p, ceil_div(nbits, 8), NULL, 0) != SUCCESS) {
+	if (f_rng(rng_ctx, (byte *)TX.p, ceil_div(nbits, 8), NULL, 0) != SUCCESS) {
 		ret = BN_ERR_INTERNAL_FAILURE;
 		goto cleanup;
 	}
@@ -2269,7 +2270,7 @@ generate:
 			goto next;
 
 		/* Do multiple rounds of Miller-Rabin */
-		if ((ret = bn_check_probable_prime(&TX, mr_rounds, f_rng)) == 1)
+		if ((ret = bn_check_probable_prime(&TX, mr_rounds, f_rng, rng_ctx)) == 1)
 			break;
 		if (ret < 0)
 			goto cleanup;
@@ -2332,7 +2333,7 @@ static const bn_udbl_t gcd_tvec[N_GCD_TVEC][3] = {
 };
 
 /* Test routine */
-int bn_self_test(void *f_rng, int verbose, FILE *fp)
+int bn_self_test(f_rng_t f_rng, void *rng_ctx, int verbose, FILE *fp)
 {
 	int ret = 0, res;
 	BIGNUM A, B, C, D, E, F, G, H, M, X, Y, Z;
@@ -2441,20 +2442,18 @@ int bn_self_test(void *f_rng, int verbose, FILE *fp)
 	bn_zfree(&X, &Y, &Z, NULL);
 
 	// Pseudo-primality test
-	if (f_rng != NULL) {
-		res = 0;
-		bn_init(&X, NULL);
-		for (int i = 0; i < N_PRIMES_TVEC; ++i) {
-			bn_from_udbl(&X, primes_tvec[i]);
-			if ((res = !(bn_check_probable_prime(&X, 27, f_rng) == 1)) != 0)
-				break;
-			bn_from_udbl(&X, composites_tvec[i]);
-			if ((res = !(bn_check_probable_prime(&X, 27, f_rng) == 0)) != 0)
-				break;
-		}
-		TEST_MSG(verbose, fp, 7, "bn_check_probable_prime", res == 0);
-		bn_zfree(&X, NULL);
+	res = 0;
+	bn_init(&X, NULL);
+	for (int i = 0; i < N_PRIMES_TVEC; ++i) {
+		bn_from_udbl(&X, primes_tvec[i]);
+		if ((res = !(bn_check_probable_prime(&X, 27, f_rng, rng_ctx) == 1)) != 0)
+			break;
+		bn_from_udbl(&X, composites_tvec[i]);
+		if ((res = !(bn_check_probable_prime(&X, 27, f_rng, rng_ctx) == 0)) != 0)
+			break;
 	}
+	TEST_MSG(verbose, fp, 7, "bn_check_probable_prime", res == 0);
+	bn_zfree(&X, NULL);
 
 cleanup:
 
@@ -2463,5 +2462,5 @@ cleanup:
 	return ret;
 }
 #else
-int bn_self_test(void *rng, int verbose, FILE *fp) { NOP; return 0; }
+int bn_self_test(f_rng_t f_rng, void *rng, int verbose, FILE *fp) { NOP; return 0; }
 #endif /* XR_BN_TESTS */
