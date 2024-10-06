@@ -75,4 +75,4 @@ To make it easier to review and accept your pull requests, please follow the fol
 
 5. Cite the sources - explicitly mention the sources of code snippets, algorithms, or ideas employed in your implementation. This includes references to research papers, articles, or any external material that contributed to the development of the code. For this, you should provide hyperlinks to the source files or other public documents you might have referred to.
 6. Try to consolidate related features and components cohesively within a single C file along with its corresponding header file, and avoid changing existing files in the library that are unrelated to your feature.
-7. Merge commits will not be accepted, you will have to remove them (usually by [rebasing](https://git-scm.com/book/en/v2/Git-Branching-Rebasing)) before it is acceptable.
+7. Merge conflicts will not be accepted, you will have to remove them (usually by [rebasing](https://git-scm.com/book/en/v2/Git-Branching-Rebasing)) before it is acceptable.
