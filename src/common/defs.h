@@ -123,10 +123,12 @@ static volatile memset_t __memz = memset;
 
 #define ALIGN(_N) __attribute__((aligned(_N)))
 
-extern void xr_mem_cpy(void *dst, const void *src, const size_t size);
-extern void xr_mem_set(void *mem, const int val, const size_t size);
-extern void xr_mem_clr(void *mem, const size_t size);
-extern int xr_mem_cmp(const void *a, const void *b, const size_t size);
+extern volatile void *xr_memset(volatile void *mem, int ch, size_t len);
+extern volatile void *xr_memzero(volatile void *mem, size_t len);
+extern volatile void *xr_memcpy(volatile void *dst, volatile void *src, size_t len);
+extern volatile void *xr_memmove(volatile void *dst, volatile void *src, size_t len);
+extern unsigned int xr_memcmp(const void *a, const void *b, size_t len);
+extern unsigned int xr_strcmp(const char *str, const char *x);
 
 #include "endianness.h"
 
