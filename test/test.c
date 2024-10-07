@@ -1,31 +1,48 @@
-#include "common/bignum.h"
-#include "common/defs.h"
-#include "rand/hmac_drbg.h"
-#include "rand/rngw32.h"
+#include "test.h"
 
-#define BUFFER_SIZE 32
+#include <stdio.h>
 
-int main() {
-  BIGNUM X;
-  HMAC_DRBG_STATE *state;
-  byte entropy[BUFFER_SIZE];
-  byte nonce[BUFFER_SIZE];
+#define STATUS_MSG(rv)                                                         \
+  printf(!rv ? "All tests ran successfully.\n\n"                               \
+             : "All tests did not run successfully.\n\n")
 
-  bn_init(&X, NULL);
-  ASSERT(1 == RngStart());
-  ASSERT(NULL != (state = hmac_drbg_new()));
+int main(void) {
+  int rv = 0;
 
-  ASSERT(1 == RngFetchBytes(entropy, BUFFER_SIZE));
-  ASSERT(1 == RngFetchBytes(nonce, BUFFER_SIZE));
-  ASSERT(ERR_HMAC_DRBG_SUCCESS == hmac_drbg_init(state, entropy, BUFFER_SIZE,
-                                                 nonce, BUFFER_SIZE, NULL, 0));
-  zeroize(entropy, BUFFER_SIZE);
-  zeroize(nonce, BUFFER_SIZE);
+#if defined(XR_TESTS_BIGNUM)
+  printf("Running tests for common/bignum.c\n");
+  rv = test_bignum();
+  STATUS_MSG(rv);
+#endif
 
-  ASSERT(0 == bn_self_test(hmac_drbg_generate, state, 1, NULL));
+#if defined(XR_TESTS_ENT)
+  printf("Running tests for ent\n");
+  const char *filename = "test/out.bin";
+  size_t nb = 1 << 20; /* 1MB of data */
+  rv = test_ent(filename, nb);
+  printf("Wrote %zu bytes to %s\n", nb, filename);
+  STATUS_MSG(rv);
+#endif
 
-  hmac_drbg_clear(state);
-  RngStop();
-  bn_zfree(&X, NULL);
+#if defined(XR_TESTS_CRYPTO_MEM)
+  printf("Running tests for common/crypto_mem.c\n");
+  rv = test_mem();
+  STATUS_MSG(rv);
+#endif
+
+#if defined(XR_TESTS_CTR_DRBG)
+  rv = ctr_drbg_run_test();
+  STATUS_MSG(rv);
+#endif
+
+#if defined(XR_TESTS_HASH_DRBG)
+  rv = hash_drbg_run_test();
+  STATUS_MSG(rv);
+#endif
+
+#if defined(XR_TESTS_HMAC_DRBG)
+  rv = hmac_drbg_run_test();
+  STATUS_MSG(rv);
+#endif
   return 0;
 }

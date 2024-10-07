@@ -164,7 +164,7 @@ void ctr_drbg_clear(CTR_DRBG_STATE *state) {
   zeroize((uint8_t *)state, sizeof(CTR_DRBG_STATE));
 }
 
-#if defined(XR_CTR_DRBG_TESTS)
+#if defined(XR_TESTS_CTR_DRBG)
 #include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -244,6 +244,7 @@ static int run_test_vecs(const char *filename) {
   }
 
   done = false;
+  passed = 0;
   while (!feof(f)) {
     fgets(buffer, sizeof(buffer), f);
     if (!strcmp(buffer, "[PredictionResistance = False]")) {
@@ -337,9 +338,9 @@ static int run_test_vecs(const char *filename) {
         return 1;
       if (!memcmp(generate_output, returned_bits, returned_bits_length)) {
         passed++;
-        printf("Test #%d PASSED\n", count);
+        printf("Test #%-3d \x1B[92mPASS\x1B[0m\n", count);
       } else {
-        printf("Test #%d FAILED\n", count);
+        printf("Test #%-3d \x1B[91mFAIL\x1B[0m\n", count);
       }
       free(entropy_input);
       free(nonce);
@@ -350,8 +351,7 @@ static int run_test_vecs(const char *filename) {
     }
     if (done) {
       count--;
-      printf("\nTests completed\n"
-             "Total: %d, Passed: %d, Failed: %d",
+      printf("Total: %d, Passed: %d, Failed: %d\n",
              count, passed, count - passed);
       break;
     }
@@ -364,8 +364,8 @@ static int run_test_vecs(const char *filename) {
 
 int ctr_drbg_run_test(void) {
   // Run 'AES-256 no df' based tests
-  printf("CTR_DRBG AES-256 no df no pr\n\n");
+  printf("CTR_DRBG AES-256 no df no pr\n");
   return run_test_vecs("test/CTR_DRBG.rsp");
 }
 
-#endif /* XR_CTR_DRBG_TESTS */
+#endif /* XR_TESTS_CTR_DRBG */

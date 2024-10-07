@@ -458,7 +458,7 @@ cleanup:
   return ret;
 }
 
-#if defined(XR_HASH_DRBG_TESTS)
+#if defined(XR_TESTS_HASH_DRBG)
 #include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -544,6 +544,7 @@ static int run_test_vecs(const char *filename) {
   }
 
   done = false;
+  passed = 0;
   while (!feof(f)) {
     fgets(buffer, sizeof(buffer), f);
     if (!strcmp(buffer, "[PredictionResistance = False]")) {
@@ -639,9 +640,9 @@ static int run_test_vecs(const char *filename) {
         return 1;
       if (!memcmp(generate_output, returned_bits, returned_bits_length)) {
         passed++;
-        printf("Test #%d PASSED\n", count);
+        printf("Test #%-3d \x1B[92mPASS\x1B[0m\n", count);
       } else {
-        printf("Test #%d FAILED\n", count);
+        printf("Test #%-3d \x1B[91mFAIL\x1B[0m\n", count);
       }
       free(entropy_input);
       free(nonce);
@@ -652,8 +653,7 @@ static int run_test_vecs(const char *filename) {
     }
     if (done) {
       count--;
-      printf("\nTests completed\n"
-             "Total: %d, Passed: %d, Failed: %d",
+      printf("Total: %d, Passed: %d, Failed: %d\n",
              count, passed, count - passed);
       break;
     }
@@ -665,8 +665,8 @@ static int run_test_vecs(const char *filename) {
 
 int hash_drbg_run_test(void) {
   // Run 'SHA-512' based tests
-  printf("Hash_DRBG SHA-512 no pr\n\n");
+  printf("Hash_DRBG SHA-512 no pr\n");
   return run_test_vecs("test/Hash_DRBG.rsp");
 }
 
-#endif /* XR_HASH_DRBG_TESTS */
+#endif /* XR_TESTS_HASH_DRBG */

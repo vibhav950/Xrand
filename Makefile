@@ -2,7 +2,7 @@ CC := gcc
 CFLAGS := -std=gnu17 -fgnu89-inline -Wpedantic -Wall -I./src/
 CXXFLAGS := -std=gnu++17 -Wall
 
-XR_FLAGS := -DXR_DEBUG -DXR_BN_TESTS -DXR_CTR_DRBG_TESTS -DXR_HASH_DRBG_TESTS -DXR_HMAC_DRBG_TESTS
+XR_FLAGS := -DXR_DEBUG -DXR_TESTS_BIGNUM -DXR_TESTS_CTR_DRBG -DXR_TESTS_HASH_DRBG -DXR_TESTS_HMAC_DRBG -DXR_TESTS_CRYPTO_MEM
 
 BIN_DIR := ./bin
 SRC_DIR := ./src
@@ -13,7 +13,7 @@ RM := rm -f
 
 COMMON_PATH := $(SRC_DIR)/common
 COMMON_SRCS := $(COMMON_PATH)/exceptions.c \
-			   $(COMMON_PATH)/mem.c \
+			   $(COMMON_PATH)/crypto_mem.c \
 			   $(COMMON_PATH)/bignum.c
 COMMON_OBJS := $(addprefix $(BIN_DIR)/, $(notdir $(COMMON_SRCS:.c=.o)))
 
@@ -46,10 +46,14 @@ RAND_SRCS := $(RAND_PATH)/rdrand.c \
 RAND_OBJS := $(addprefix $(BIN_DIR)/, $(notdir $(RAND_SRCS:.c=.o)))
 
 TEST_PATH := test
-TEST_SRCS := $(TEST_PATH)/ent.c
+TEST_SRCS := $(TEST_PATH)/test_bignum.c \
+			 $(TEST_PATH)/test_ent.c \
+			 $(TEST_PATH)/test_mem.c \
+			 $(TEST_PATH)/test.c
 TEST_OBJS := $(addprefix $(BIN_DIR)/, $(notdir $(TEST_SRCS:.c=.o)))
+TEST_FLAGS := -O0
 
-EXE := $(BIN_DIR)/xrand-test
+EXE := $(BIN_DIR)/xrand
 
 .PHONY: all
 all: $(EXE)

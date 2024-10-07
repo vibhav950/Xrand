@@ -2152,7 +2152,7 @@ cleanup:
   return ret;
 }
 
-#if defined(XR_BN_TESTS)
+#if defined(XR_TESTS_BIGNUM)
 #define TEST_MSG(v, fp, i, msg, res)                                           \
   do {                                                                         \
     if (v)                                                                     \
@@ -2344,4 +2344,4 @@ int bn_self_test(f_rng_t f_rng, void *rng, int verbose, FILE *fp) {
   NOP;
   return 0;
 }
-#endif /* XR_BN_TESTS */
+#endif /* XR_TESTS_BIGNUM */
