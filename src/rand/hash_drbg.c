@@ -507,6 +507,7 @@ static int read_uint(FILE *f, unsigned int *val, const char *format,
 }
 
 static int run_test_vecs(const char *filename) {
+  int rv;
   FILE *f;
   bool done;
   unsigned int i;
@@ -523,7 +524,7 @@ static int run_test_vecs(const char *filename) {
   uint8_t *returned_bits;
   uint8_t *generate_output;
   HASH_DRBG_STATE *state;
-  char buffer[2048];
+  char buffer[1024];
 
   if (NULL == (state = hash_drbg_new())) {
     printf("Out of memory\n");
@@ -550,29 +551,40 @@ static int run_test_vecs(const char *filename) {
     if (!strcmp(buffer, "[PredictionResistance = False]")) {
       printf("Error in parsing; the test vectors must be extracted from "
              "drbgvectors_pr_false.zip\n");
-      return 1;
+      rv = 1;
+      goto clean0;
     }
 
     // read length params and convert to bytes
     if (read_uint(f, &entropy_input_length, "[EntropyInputLen = %u]",
-                  "EntropyInputLen"))
-      return 1;
+                  "EntropyInputLen")) {
+      rv = 1;
+      goto clean0;
+    }
     entropy_input_length >>= 3;
-    if (read_uint(f, &nonce_length, "[NonceLen = %u]", "NonceLen"))
-      return 1;
+    if (read_uint(f, &nonce_length, "[NonceLen = %u]", "NonceLen")) {
+      rv = 1;
+      goto clean0;
+    }
     nonce_length >>= 3;
     if (read_uint(f, &personalization_string_length,
                   "[PersonalizationStringLen = %u]",
-                  "PersonalizationStringLen"))
-      return 1;
+                  "PersonalizationStringLen")) {
+      rv = 1;
+      goto clean0;
+    }
     personalization_string_length >>= 3;
     if (read_uint(f, &additional_input_length, "[AdditionalInputLen = %u]",
-                  "AdditionalInputLen"))
-      return 1;
+                  "AdditionalInputLen")) {
+      rv = 1;
+      goto clean0;
+    }
     additional_input_length >>= 3;
     if (read_uint(f, &returned_bits_length, "[ReturnedBitsLen = %u]",
-                  "ReturnedBitsLen"))
-      return 1;
+                  "ReturnedBitsLen")) {
+      rv = 1;
+      goto clean0;
+    }
     returned_bits_length >>= 3;
 
     while (!feof(f)) {
@@ -586,35 +598,43 @@ static int run_test_vecs(const char *filename) {
       }
 
       // init
-      if (read_hex(f, &entropy_input, "EntropyInput = ", entropy_input_length))
-        return 1;
-      if (read_hex(f, &nonce, "Nonce = ", nonce_length))
-        return 1;
+      if (read_hex(f, &entropy_input,
+                   "EntropyInput = ", entropy_input_length)) {
+        rv = 1;
+        goto clean0;
+      }
+      if (read_hex(f, &nonce, "Nonce = ", nonce_length)) {
+        rv = 1;
+        goto clean1;
+      }
       if (read_hex(f, &personalization_string,
-                   "PersonalizationString = ", personalization_string_length))
-        return 1;
+                   "PersonalizationString = ", personalization_string_length)) {
+        rv = 1;
+        goto clean2;
+      }
       assert(ERR_HASH_DRBG_SUCCESS ==
              hash_drbg_init(state, entropy_input, entropy_input_length, nonce,
                             nonce_length, personalization_string,
                             personalization_string_length));
 
       free(entropy_input);
+      entropy_input = NULL;
       // reseed
       if (read_hex(f, &entropy_input,
-                   "EntropyInputReseed = ", entropy_input_length))
-        return 1;
+                   "EntropyInputReseed = ", entropy_input_length)) {
+        rv = 1;
+        goto clean3;
+      }
       if (read_hex(f, &additional_input,
-                   "AdditionalInputReseed = ", additional_input_length))
-        return 1;
+                   "AdditionalInputReseed = ", additional_input_length)) {
+        rv = 1;
+        goto clean3;
+      }
       assert(ERR_HASH_DRBG_SUCCESS ==
              hash_drbg_reseed(state, entropy_input, entropy_input_length,
                               additional_input, additional_input_length));
 
       // generate
-      if (NULL == (returned_bits = (uint8_t *)malloc(returned_bits_length))) {
-        printf("Out of memory\n");
-        exit(1);
-      }
       if (NULL == (generate_output = (uint8_t *)malloc(returned_bits_length))) {
         printf("Out of memory\n");
         exit(1);
@@ -622,8 +642,10 @@ static int run_test_vecs(const char *filename) {
       for (i = 0; i < 2; ++i) { // generate twice and overwrite the first output
                                 // with the second
         if (read_hex(f, &additional_input,
-                     "AdditionalInput = ", additional_input_length))
-          return 1;
+                     "AdditionalInput = ", additional_input_length)) {
+          rv = 1;
+          goto clean4;
+        }
         if (additional_input_length == 0) {
           free(additional_input);
           additional_input = NULL;
@@ -631,13 +653,16 @@ static int run_test_vecs(const char *filename) {
         assert(ERR_HASH_DRBG_SUCCESS ==
                hash_drbg_generate(state, generate_output, returned_bits_length,
                                   additional_input, additional_input_length));
-        if (additional_input_length)
-          free(additional_input);
+        free(additional_input);
+        additional_input = NULL;
       }
 
       // comapre result
-      if (read_hex(f, &returned_bits, "ReturnedBits = ", returned_bits_length))
-        return 1;
+      if (read_hex(f, &returned_bits,
+                   "ReturnedBits = ", returned_bits_length)) {
+        rv = 1;
+        goto clean4;
+      }
       if (!memcmp(generate_output, returned_bits, returned_bits_length)) {
         passed++;
         printf("Test #%-3d \x1B[92mPASS\x1B[0m\n", count);
@@ -653,14 +678,27 @@ static int run_test_vecs(const char *filename) {
     }
     if (done) {
       count--;
-      printf("Total: %d, Passed: %d, Failed: %d\n",
-             count, passed, count - passed);
+      printf("Total: %d, Passed: %d, Failed: %d\n", count, passed,
+             count - passed);
       break;
     }
   }
+  rv = 0;
+  goto clean0;
+
+clean4:
+  free(generate_output);
+  free(additional_input);
+clean3:
+  free(personalization_string);
+clean2:
+  free(nonce);
+clean1:
+  free(entropy_input);
+clean0:
   hash_drbg_clear(state);
   fclose(f);
-  return 0;
+  return rv;
 }
 
 int hash_drbg_run_test(void) {

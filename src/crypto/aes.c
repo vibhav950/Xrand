@@ -24,7 +24,7 @@
 
 #include "aes.h"
 
-static inline void KEY_256_ASSIST_1(__m128i *temp1, __m128i *temp2) {
+static inline void __attribute__((always_inline)) KEY_256_ASSIST_1(__m128i *temp1, __m128i *temp2) {
   __m128i temp4;
   *temp2 = _mm_shuffle_epi32(*temp2, 0xff);
   temp4 = _mm_slli_si128(*temp1, 0x4);
@@ -36,7 +36,7 @@ static inline void KEY_256_ASSIST_1(__m128i *temp1, __m128i *temp2) {
   *temp1 = _mm_xor_si128(*temp1, *temp2);
 }
 
-static inline void KEY_256_ASSIST_2(__m128i *temp1, __m128i *temp3) {
+static inline void __attribute__((always_inline)) KEY_256_ASSIST_2(__m128i *temp1, __m128i *temp3) {
   __m128i temp2, temp4;
   temp4 = _mm_aeskeygenassist_si128(*temp1, 0x0);
   temp2 = _mm_shuffle_epi32(temp4, 0xaa);
