@@ -74,7 +74,7 @@ static const u8 trivium_k[TRIVIUM_KEY_SIZE] = {0xfc, 0xd0, 0xdf, 0x7d, 0x9d,
  * and rotate the internal state over 4 full cycles
  * without generating any key-stream bits.
  */
-void trivium_init(const u8 *k, const u8 *iv) {
+static void trivium_init(const u8 *k, const u8 *iv) {
   /* Insert 80-bit key */
   x1 = ((u32)k[3] << 24) | ((u32)k[2] << 16) | ((u32)k[1] << 8) | k[0];
   x2 = ((u32)k[7] << 24) | ((u32)k[6] << 16) | ((u32)k[5] << 8) | k[4];
