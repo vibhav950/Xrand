@@ -22,6 +22,16 @@
 
 #define XRAND_VERSION "1.0.1"
 
+#if defined(__GNUC__) || defined(__clang__)
+#ifndef XR_DEBUG
+#define XRAND_UNSTABLE __attribute__((error("Unstable in Xrand v"XRAND_VERSION)))
+#else
+#define XRAND_UNSTABLE __attribute__((warning("Unstable in Xrand v"XRAND_VERSION)))
+#endif
+#else
+#define XRAND_UNSTABLE
+#endif
+
 #ifdef _WIN32
 #include <windows.h>
 #endif

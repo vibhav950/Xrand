@@ -45,17 +45,17 @@
 #define TRIVIUM_RESEED_PERIOD (1ULL << 20)
 
 /* Init the Trivium CSPRNG. */
-status_t TriviumCsprngInit(void);
+XRAND_UNSTABLE status_t TriviumCsprngInit(void);
 /* Reset the counter and internal state. */
-void TriviumCsprngReset(void);
+XRAND_UNSTABLE void TriviumCsprngReset(void);
 
 /* Fetch an 8-bit random number. */
-u8 TriviumRand8();
+XRAND_UNSTABLE u8 TriviumRand8();
 /* Fetch a 16-bit random number. */
-u16 TriviumRand16();
+XRAND_UNSTABLE u16 TriviumRand16();
 /* Fetch a 32-bit random number. */
-u32 TriviumRand32();
+XRAND_UNSTABLE u32 TriviumRand32();
 /* Fetch a 64-bit random number. */
-u64 TriviumRand64();
+XRAND_UNSTABLE u64 TriviumRand64();
 
 #endif /* TRIVIUM_H */
