@@ -77,7 +77,7 @@ typedef unsigned __int64 u64;
 #define min(_a, _b) (((_a) < (_b)) ? (_a) : (_b))
 
 #define count(_arr) (sizeof(_arr) / sizeof((_arr)[0]))
-#define ceil_div(_x, _y) ((_x) / (_y) + ((_x) % (_y) ? 1 : 0))
+#define ceil_div(_x, _y) (((_x) + (_y) - 1) / (_y))
 #define floor_div(_x, _y) ((_x) / (_y))
 
 typedef enum { false = 0, true } bool;
