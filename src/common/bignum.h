@@ -88,9 +88,9 @@ typedef struct bignum_st {
 #define BN_ERR_BAD_INPUT_DATA -0x0004 /* Invalid input arguments provided */
 #define BN_ERR_INVALID_CHARACTER                                               \
   -0x0005 /* Invalid character in the digit string */
-#define BN_ERR_NOT_ENOUGH_LIMBS -0x0006 /* Request exceeded max allowed        \
+#define BN_ERR_TOO_MANY_LIMBS -0x0006 /* Request exceeded max allowed        \
                                            limbs*/
-#define BN_ERR_NEGATIVE_VALUE -0x0007 /* Negative nput arguments provided */
+#define BN_ERR_NEGATIVE_VALUE -0x0007 /* Negative input arguments provided */
 #define BN_ERR_DIVISION_BY_ZERO -0x0008 /* Division by zero */
 
 #define BN_MAX_LIMBS 1024

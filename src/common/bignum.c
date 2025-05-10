@@ -71,7 +71,7 @@ int bn_grow(BIGNUM *X, const size_t nlimbs) {
   bn_uint_t *p;
 
   if (nlimbs > BN_MAX_LIMBS)
-    return BN_ERR_NOT_ENOUGH_LIMBS;
+    return BN_ERR_TOO_MANY_LIMBS;
 
   if (X->n >= nlimbs)
     return 0;
@@ -105,7 +105,7 @@ int bn_shrink(BIGNUM *X, const size_t nlimbs) {
   size_t i;
 
   if (nlimbs > BN_MAX_LIMBS)
-    return BN_ERR_NOT_ENOUGH_LIMBS;
+    return BN_ERR_TOO_MANY_LIMBS;
 
   s = X->s;
   f = X->f;
@@ -1208,7 +1208,7 @@ int bn_mul(BIGNUM *A, BIGNUM *B, BIGNUM *X) {
      hold the result, but we keep two extra limbs to prevent
      a buffer overflow in bn_mul1_hlp */
   if (A->n + B->n + 2 >= BN_MAX_LIMBS)
-    return BN_ERR_NOT_ENOUGH_LIMBS;
+    return BN_ERR_TOO_MANY_LIMBS;
 
   if (bn_is_zero(A) || bn_is_zero(B))
     X->s = 1;
@@ -2087,7 +2087,7 @@ int bn_generate_proabable_prime(BIGNUM *X, int nbits, f_rng_t f_rng,
   if (nbits < 3)
     return BN_ERR_BAD_INPUT_DATA;
   if (nbits > BN_MAX_BITS)
-    return BN_ERR_NOT_ENOUGH_LIMBS;
+    return BN_ERR_TOO_MANY_LIMBS;
 
   bn_init(&TX, NULL);
   BN_CHECK(bn_grow(&TX, BN_BITS_TO_LIMBS(nbits)));
