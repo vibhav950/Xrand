@@ -16,6 +16,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#define WORD_SIZE 4
 
 /* Defines for the word width depending upon the architecture. */
 #ifndef WORD_SIZE
@@ -127,6 +128,8 @@ void bn_zfree(BIGNUM *X, ...);
 int bn_grow(BIGNUM *X, const size_t nlimbs);
 /* Shrink X as much as possible while keeping at least nlimbs */
 int bn_shrink(BIGNUM *X, const size_t nlimbs);
+/* Resize X to exactly nlimbs */
+int bn_resize(BIGNUM *X, int nlimbs);
 /* Copy Y to X */
 int bn_assign(BIGNUM *X, const BIGNUM *Y);
 /* Copy udbl to the least significant limbs of X */

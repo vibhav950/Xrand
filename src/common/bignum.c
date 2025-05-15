@@ -134,6 +134,15 @@ int bn_shrink(BIGNUM *X, const size_t nlimbs) {
   return 0;
 }
 
+/** Resize X to exactly the specified number of limbs */
+int bn_resize(BIGNUM *X, int nlimbs) {
+  if (X->n < nlimbs)
+    return bn_grow(X, nlimbs);
+  if (X->n > nlimbs)
+    return bn_shrink(X, nlimbs);
+  return 0;
+}
+
 /* Copy the value of a udbl to the least significant
    limbs of the BIGNUM */
 int bn_from_udbl(BIGNUM *X, const bn_udbl_t n) {
@@ -751,7 +760,7 @@ int bn_add_abs(BIGNUM *A, BIGNUM *B, BIGNUM *X) {
     X->p[j] = t;
   }
 
-  /* Propogate the carry */
+  /* Propagate the carry */
   while (c) {
     if (i >= X->n)
       BN_CHECK(bn_grow(X, i + 1));
@@ -987,8 +996,6 @@ int bn_rshift(BIGNUM *X, const int count) {
 
 #include <limits.h>
 // TODO: Fix Karatsuba multiplication
-// #define BN_KARATSUBA_CUTOFF 80
-// #define BN_KARATSUBA_SQUARE_CUTOFF 100
 #define BN_KARATSUBA_CUTOFF INT_MAX
 #define BN_KARATSUBA_SQUARE_CUTOFF INT_MAX
 
@@ -1010,22 +1017,22 @@ static inline void bn_mul1_hlp(int i, bn_uint_t *s, bn_uint_t *d, bn_uint_t b) {
     bn_udbl_t r;
     bn_uint_t r0, r1;
     MLAC MLAC
-	MLAC MLAC
-	MLAC MLAC
-	MLAC MLAC
-	MLAC MLAC
-	MLAC MLAC
-	MLAC MLAC
-	MLAC MLAC
+	  MLAC MLAC
+	  MLAC MLAC
+	  MLAC MLAC
+	  MLAC MLAC
+	  MLAC MLAC
+	  MLAC MLAC
+	  MLAC MLAC
   }
 
   for (; i >= 8; i -= 8) {
     bn_udbl_t r;
     bn_uint_t r0, r1;
     MLAC MLAC
-	MLAC MLAC
-	MLAC MLAC
-	MLAC MLAC
+	  MLAC MLAC
+	  MLAC MLAC
+	  MLAC MLAC
   }
 
   for (; i > 0; i--) {
@@ -1042,18 +1049,17 @@ static inline void bn_mul1_hlp(int i, bn_uint_t *s, bn_uint_t *d, bn_uint_t b) {
 }
 
 /* Pen-and-paper multiplication [HAC 14.12] */
-static int bn_mul1(BIGNUM *A, BIGNUM *B, BIGNUM *X) {
+static int bn_mul1(BIGNUM *A, BIGNUM *B, BIGNUM *X, int alen, int blen) {
   int ret = 0, i, j;
 
-  for (i = (int)A->n - 1; i >= 0; i--)
+  for (i = alen - 1; i >= 0; i--)
     if (A->p[i] != 0)
       break;
 
-  for (j = (int)B->n - 1; j >= 0; j--)
+  for (j = blen - 1; j >= 0; j--)
     if (B->p[j] != 0)
       break;
 
-  BN_CHECK(bn_grow(X, i + j + 2));
   BN_CHECK(bn_from_udbl(X, 0));
 
   for (i++; j >= 0; j--)
@@ -1087,20 +1093,18 @@ static int bn_mul_hlp(BIGNUM *A, BIGNUM *B, BIGNUM *X, int alen, int blen);
    Note: This function can make a (recursive) call to itself
    - We perform the 'single digit' multiplications by calling
     back the generic multiply function, which can lead us back
-    into this function if a0, a1, b0 or b1 are above the cutoff.
+    into this function if a0, a1, b0 or b1 are above the cutoff
+    length.
    - This 'divide-and-conquer' approach results in the famous
     O(n**log(3)) or O(n**1.584) elementary operations, making
-    it asymptotically faster than the O(n**2) grade school
+    it asymptotically faster than the O(n**2) gradeschool
 	algorithm. */
-static int bn_mul2(BIGNUM *A, BIGNUM *B, BIGNUM *X) {
-  int ret = 0, alen, blen, a1, a0, b1, b0, R;
+static int bn_mul2(BIGNUM *A, BIGNUM *B, BIGNUM *X, int alen, int blen) {
+  int ret = 0, a1, a0, b1, b0, R;
   BIGNUM A1, A0, B1, B0, A1B1, A0B0, T;
 
-  alen = A->n;
-  blen = B->n;
-
   /* half the min # of limbs (we have ensured alen <= blen) */
-  R = alen >> 1;
+  R = alen / 2;
 
   a0 = R;
   a1 = alen - R;
@@ -1111,8 +1115,8 @@ static int bn_mul2(BIGNUM *A, BIGNUM *B, BIGNUM *X) {
 
   /* Allocate memory for temps */
   BN_CHECK(bn_grow(&A0, a0));
-  BN_CHECK(bn_grow(&B0, b0));
   BN_CHECK(bn_grow(&A1, a1));
+  BN_CHECK(bn_grow(&B0, b0));
   BN_CHECK(bn_grow(&B1, b1));
 
   /* We have guaranteed that these temps are big enough,
@@ -1122,36 +1126,47 @@ static int bn_mul2(BIGNUM *A, BIGNUM *B, BIGNUM *X) {
   memcpy(A1.p, A->p + a0, a1 * WORD_SIZE);
   memcpy(B1.p, B->p + b0, b1 * WORD_SIZE);
 
+  /* Remove trailing zeros (clamp) the lower halves since
+     the upper halves A1/B1 must have a known number of limbs */
+  /* FIXME: This is quite expensive as of now because bn_shrink()
+     does a calloc/memcpy */
+  BN_CHECK(bn_shrink(&A0, 0));
+  BN_CHECK(bn_shrink(&B0, 0));
+  a0 = A0.n;
+  b0 = B0.n;
+
   /* Compute A0*B0 and A1*B1 */
   BN_CHECK(bn_mul_hlp(&A0, &B0, &A0B0, a0, b0));
   BN_CHECK(bn_mul_hlp(&A1, &B1, &A1B1, a1, b1));
 
-  /* A1 = A1 + A0 */
-  BN_CHECK(bn_add_abs(&A1, &A0, &A1));
-  /* B1 = B1 + B0 */
-  BN_CHECK(bn_add_abs(&B1, &B0, &B1));
+  /* T1 = A1 + A0 */
+  BN_CHECK(bn_add_abs(&A1, &A0, &A0));
+  /* T2 = B1 + B0 */
+  BN_CHECK(bn_add_abs(&B1, &B0, &B0));
 
-  /* B1 = (A1 + A0)*(B1 + B0) */
-  BN_CHECK(bn_mul_hlp(&A1, &B1, &B1, A1.n, B1.n));
-  /* A1 = A1*B1 + A0*B0 */
-  BN_CHECK(bn_add_abs(&A1B1, &A0B0, &A1));
+  /* T = (A1 + A0)*(B1 + B0) */
+  BN_CHECK(bn_mul_hlp(&A0, &B0, &T, A0.n, B0.n));
 
-  /* T = (A1 + A0)*(B1 + B0) - (A1*B1 + A0*B0) */
-  BN_CHECK(bn_sub(&B1, &A1, &T));
+  /* T1 = A0B0 + A1B1 */
+  BN_CHECK(bn_add_abs(&A0B0, &A1B1, &A0));
 
-  /* T = ((A1 + A0)*(B1 + B0) - (A1*B1 + A0*B0)) << R */
+  /* T = (A1 + A0) * (B1 + B0) - (A0B0 + A1B1) */
+  BN_CHECK(bn_sub(&T, &A0, &T));
+
+  /* T = T << R */
   BN_CHECK(bn_lshift(&T, R * BIW));
-  /* A1B1 = A1*B1 << 2R */
-  BN_CHECK(bn_lshift(&A1B1, (2 * R) * BIW));
+  /* A1B1 = A1B1 << 2R */
+  BN_CHECK(bn_lshift(&A1B1, (R * 2) * BIW));
 
-  /* T = A0*B0 + T */
+  /* T = A0B0 + T */
   BN_CHECK(bn_add_abs(&A0B0, &T, &T));
-  /* X = A0*B0 + T + A1*B1 */
+
+  /* X = T + A1B1 */
   BN_CHECK(bn_add_abs(&T, &A1B1, X));
 
 cleanup:
 
-  bn_init(&A1, &A0, &B1, &B0, &A0B0, &A1B1, &T, NULL);
+  bn_zfree(&A1, &A0, &B1, &B0, &A0B0, &A1B1, &T, NULL);
 
   return ret;
 }
@@ -1160,8 +1175,10 @@ cleanup:
 static int bn_mul_hlp(BIGNUM *A, BIGNUM *B, BIGNUM *X, int alen, int blen) {
   int ret = 0, i;
 
-  if (alen == 0 || blen == 0) {
-    BN_CHECK(bn_grow(X, alen + blen));
+  /* Allocate memory for the result */
+  BN_CHECK(bn_grow(X, alen + blen));
+
+  if ((alen == 0) || (blen == 0)) {
     memset(X->p, 0, (alen + blen) * WORD_SIZE);
     return 0;
   }
@@ -1183,10 +1200,10 @@ static int bn_mul_hlp(BIGNUM *A, BIGNUM *B, BIGNUM *X, int alen, int blen) {
 
   if (alen >= i)
     /* Use Karatsuba multiplication */
-    return bn_mul2(A, B, X);
+    return bn_mul2(A, B, X, alen, blen);
   else
     /* Use gradeschool multiplication */
-    return bn_mul1(A, B, X);
+    return bn_mul1(A, B, X, alen, blen);
 
 cleanup:
 
@@ -1205,9 +1222,8 @@ int bn_mul(BIGNUM *A, BIGNUM *B, BIGNUM *X) {
   bn_init(&TA, &TB, NULL);
 
   /* In any case A->n + B->n limbs will always be enough to
-     hold the result, but we keep two extra limbs to prevent
-     a buffer overflow in bn_mul1_hlp */
-  if (A->n + B->n + 2 >= BN_MAX_LIMBS)
+     hold the result */
+  if (A->n + B->n >= BN_MAX_LIMBS)
     return BN_ERR_TOO_MANY_LIMBS;
 
   if (bn_is_zero(A) || bn_is_zero(B))
@@ -1225,8 +1241,13 @@ int bn_mul(BIGNUM *A, BIGNUM *B, BIGNUM *X) {
     B = &TB;
   }
 
+  /* Discard trailing zeros */
   alen = A->n;
   blen = B->n;
+  while ((alen > 0) && (A->p[alen - 1] == 0))
+    alen--;
+  while ((blen > 0) && (B->p[blen - 1] == 0))
+    blen--;
 
   ret = bn_mul_hlp(A, B, X, alen, blen);
 
